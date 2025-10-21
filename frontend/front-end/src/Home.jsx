@@ -1,5 +1,7 @@
 import React from "react";
 import Carousel from "./Components/Carousel";
+import ContactForm from "./Components/ContactForm";
+import Footer from "./Components/Footer";
 
 const Home = () => {
   return (
@@ -19,11 +21,15 @@ const Home = () => {
              the cosmetics field as well as energetic, enthusiastic, young persons. This gives a perfect 
              combination of prompt action balanced with experience.
         </p>
-        <button className="bg-blue-600 hover:bg-blue-700 px-6 py-4 my-4 rounded-lg text-white font-medium transition">
-            View More
+        <button className="bg-black cursor-pointer px-6 py-4 my-4 rounded-lg text-yellow-500 font-medium transition">
+            Our Products
         </button>
       </div>
-      <div></div>
+      <div>
+        <ContactForm />
+      </div>
+
+      <Footer />
     </>
   );
 };
