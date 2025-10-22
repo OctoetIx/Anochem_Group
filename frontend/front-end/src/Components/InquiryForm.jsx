@@ -148,7 +148,7 @@ const InquiryForm = () => {
         <div className="flex justify-start">
           <button
             type="submit"
-            className="bg-black text-yellow-500 font-semibold px-6 py-3 rounded-md transition-all"
+            className="bg-black text-yellow-500 hover:bg-yellow-600 hover:text-black cursor-pointer transition font-semibold px-6 py-3 rounded-md transition-all"
           >
             Submit
           </button>

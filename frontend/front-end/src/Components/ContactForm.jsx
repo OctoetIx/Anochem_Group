@@ -107,9 +107,11 @@ const ContactForm = () => {
             className="w-full border border-gray-300 rounded-lg p-2 text-white bg-black"
           >
             <option value="">Select a product</option>
-            <option value="Chemical A">Chemical A</option>
-            <option value="Chemical B">Chemical B</option>
-            <option value="Chemical C">Chemical C</option>
+            <option value="skincare">Skin Care</option>
+            <option value="haircare">Hair Care</option>
+            <option value="bodylotion">Body Lotion</option>
+            <option value="antiseptics">Antiseptics</option>
+            <option value="toiletries">Toiletries</option>
           </select>
         </div>
 
@@ -117,7 +119,7 @@ const ContactForm = () => {
         <div className="pt-4">
           <button
             type="submit"
-            className="bg-yellow-500 text-black px-8 py-3 rounded-md font-semibold transition"
+            className="bg-yellow-500 text-black cursor-pointer hover:bg-yellow-600 px-8 py-3 rounded-md font-semibold transition"
           >
             Submit
           </button>

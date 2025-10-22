@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowUp } from "lucide-react";
+import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 
 const Footer = () => {
   return (
@@ -47,8 +48,8 @@ const Footer = () => {
         <div>
           <h3 className="font-bold text-lg mb-3">OPENING TIME</h3>
           <p className="text-gray-300">
-            Open: <span className="font-semibold">8:00 AM</span> –
-            <br />
+            Monday – Friday: <br />
+            Open: <span className="font-semibold">8:00 AM</span> – <br />
             Close: <span className="font-semibold">18:00 PM</span>
             <br />
             Saturday – Sunday: Close
@@ -56,14 +57,50 @@ const Footer = () => {
         </div>
       </div>
 
+      {/* Social Media Icons */}
+      <div className="flex justify-center gap-6 pb-6">
+        <a
+          href="https://www.facebook.com/anochemical"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Facebook"
+          className="text-[#d4a44d] hover:text-white transition"
+        >
+          <FaFacebookF size={20} />
+        </a>
+        <a
+          href="https://twitter.com/anochemical"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Twitter"
+          className="text-[#d4a44d] hover:text-white transition"
+        >
+          <FaTwitter size={20} />
+        </a>
+        <a
+          href="https://www.instagram.com/anochemical"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram"
+          className="text-[#d4a44d] hover:text-white transition"
+        >
+          <FaInstagram size={20} />
+        </a>
+        <a
+          href="https://www.linkedin.com/company/anochemical"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="LinkedIn"
+          className="text-[#d4a44d] hover:text-white transition"
+        >
+          <FaLinkedinIn size={20} />
+        </a>
+      </div>
+
       {/* Bottom Bar */}
       <div className="bg-[#1e1e1e] border-t border-gray-700 py-4 px-6 flex flex-col md:flex-row justify-between items-center text-gray-300 text-sm">
-        <p>Copyright © 2020 ANOCHEM GROUP. All Right Reserved.</p>
-        <p>
-          Designed By{" "}
-          <span className="text-[#d4a44d] font-semibold">
-            Flocheno Limited
-          </span>
+        <p className="text-center">
+          Copyright © 2025 ANOCHEM GROUP. All Right Reserved.
         </p>
 
         {/* Back to top button */}
@@ -77,5 +114,6 @@ const Footer = () => {
       </div>
     </footer>
   );
-}
+};
+
 export default Footer;
