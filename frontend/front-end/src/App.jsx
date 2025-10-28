@@ -7,6 +7,9 @@ import Home from "./Home";
 import About from "./Components/About";
 import Login from "./auth/Login";
 import InquiryForm from "./Components/InquiryForm";
+import ContactPage from "./Components/ContactPage";
+import ProductPage from "./Components/ProductPage";
+import AdminDashboard from "./Components/admin/AdminDashboard";
 
 
 const App = () => {
@@ -16,15 +19,11 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/products" element={<h1>Our Products</h1>} />
+        <Route path="/products" element={<ProductPage/>} />
         <Route path="/about" element={<About />} />
         <Route path="/inquiry" element={<InquiryForm/>} />
-        <Route path="/contact" element={<h1>Contact Us</h1>} />
-        <Route path="/skincare" element={<h1>Skin Care</h1>} />
-        <Route path="/haircare" element={<h1>Hair Care</h1>} />
-        <Route path="/bodylotion" element={<h1>Body Lotion</h1>} />
-        <Route path="/antiseptics" element={<h1>Antiseptics</h1>} />
-        <Route path="/toiletries" element={<h1>Toiletries</h1>} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/admin" element={<AdminDashboard/>} />
       </Routes>
       <Footer />
     </BrowserRouter>
