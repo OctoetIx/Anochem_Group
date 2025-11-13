@@ -1,3 +1,4 @@
+// Components/ViewProducts.jsx
 import React from "react";
 
 const ViewProducts = ({ products, onDelete, onEdit }) => {
@@ -11,18 +12,18 @@ const ViewProducts = ({ products, onDelete, onEdit }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
             <div
-              key={product.id}
+              key={product._id} // use _id from MongoDB
               className="bg-white rounded-lg shadow p-4 flex flex-col justify-between"
             >
-              {product.image && (
+              {product.imageUrl && (
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={product.imageUrl}
+                  alt={product.productName}
                   className="h-40 w-full object-cover rounded-md"
                 />
               )}
               <div className="mt-3">
-                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <h3 className="text-lg font-semibold">{product.productName}</h3>
                 <p className="text-gray-600 text-sm">{product.description}</p>
                 <p className="text-sm text-gray-500 mt-1">
                   Category: {product.category}
@@ -36,7 +37,7 @@ const ViewProducts = ({ products, onDelete, onEdit }) => {
                   Edit
                 </button>
                 <button
-                  onClick={() => onDelete(product.id)}
+                  onClick={() => onDelete(product._id)}
                   className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
                 >
                   Delete

@@ -3,6 +3,14 @@ import { NavLink } from "react-router-dom";
 import { Menu, X } from "lucide-react"; // hamburger + close icons
 import logo1 from "../assets/logo1.png";
 
+const categories = [
+  { name: "Skin Care", slug: "skin-care" },
+  { name: "Hair Care", slug: "hair-care" },
+  { name: "Body Lotion", slug: "body-lotion" },
+  { name: "Antiseptics", slug: "antiseptics" },
+  { name: "Toiletries", slug: "toiletries" },
+];
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -13,9 +21,11 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 w-full bg-black text-white shadow-md z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
-        <div className="flex items-center text-yellow-500">
-          <img src={logo1} alt="Logo" className="w-14 h-14 object-contain" />
-        </div>
+        <NavLink to="/">
+          <div className="flex items-center text-yellow-500 cursor-pointer">
+            <img src={logo1} alt="Logo" className="w-14 h-14 object-contain" />
+          </div>
+        </NavLink>
 
         {/* Desktop Nav Links */}
         <div className="hidden md:flex space-x-6 items-center">
@@ -29,55 +39,37 @@ const Navbar = () => {
           >
             Home
           </NavLink>
+{/* Dropdown Menu */}
+<div className="relative inline-block"
+     onMouseEnter={() => setDropdownOpen(true)}
+     onMouseLeave={() => setDropdownOpen(false)}>
+  <NavLink
+    to="/products"
+    className="hover:text-yellow-500 font-semibold transition-colors"
+  >
+    Our Products ▾
+  </NavLink>
 
-          {/* Dropdown Menu */}
-          <div
-            className="relative inline-block"
-            onMouseEnter={() => setDropdownOpen(true)}
-            onMouseLeave={() => setDropdownOpen(false)}
-          >
-            <NavLink
-              to="/products"
-              className="hover:text-yellow-500 font-semibold transition-colors"
-            >
-              Our Products ▾
-            </NavLink>
-
-            {dropdownOpen && (
-              <div className="absolute left-0 mt-2 w-48 bg-black rounded-2xl text-yellow-500 z-20">
-                <NavLink
-                  to="/products/skincare"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Skin Care
-                </NavLink>
-                <NavLink
-                  to="/haircare"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Hair Care
-                </NavLink>
-                <NavLink
-                  to="/bodylotion"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Body Lotion
-                </NavLink>
-                <NavLink
-                  to="/antiseptics"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Antiseptics
-                </NavLink>
-                <NavLink
-                  to="/toiletries"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Toiletries
-                </NavLink>
-              </div>
-            )}
-          </div>
+  {dropdownOpen && (
+    <div className="absolute left-0 mt-2 w-48 bg-black rounded-2xl text-yellow-500 z-20">
+      <NavLink to="/products/skin-care" className="block px-4 py-2 hover:bg-white hover:text-black">
+        Skin Care
+      </NavLink>
+      <NavLink to="/products/hair-care" className="block px-4 py-2 hover:bg-white hover:text-black">
+        Hair Care
+      </NavLink>
+      <NavLink to="/products/body-lotion" className="block px-4 py-2 hover:bg-white hover:text-black">
+        Body Lotion
+      </NavLink>
+      <NavLink to="/products/antiseptics" className="block px-4 py-2 hover:bg-white hover:text-black">
+        Antiseptics
+      </NavLink>
+      <NavLink to="/products/toiletries" className="block px-4 py-2 hover:bg-white hover:text-black">
+        Toiletries
+      </NavLink>
+    </div>
+  )}
+</div>
 
           <NavLink
             to="/about"
@@ -132,13 +124,19 @@ const Navbar = () => {
           >
             Home
           </NavLink>
-          <NavLink
-            to="/products"
-            onClick={toggleMenu}
-            className="block text-white hover:text-yellow-500"
-          >
-            Our Products
-          </NavLink>
+
+          {/* Mobile categories */}
+          {categories.map((cat) => (
+            <NavLink
+              key={cat.slug}
+              to={`/products/${cat.slug}`}
+              onClick={toggleMenu}
+              className="block text-white hover:text-yellow-500"
+            >
+              {cat.name}
+            </NavLink>
+          ))}
+
           <NavLink
             to="/about"
             onClick={toggleMenu}

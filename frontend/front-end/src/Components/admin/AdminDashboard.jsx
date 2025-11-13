@@ -1,99 +1,156 @@
-import React, { useState, useEffect } from "react";
+// AdminDashboard.jsx
+import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
+import { ProductContext } from "../../context/ProductContext";
 import Sidebar from "./SideBar";
 import Header from "./Header";
-import ProductForm from "./ProductForm";
+import ProductForms from "./ProductForm";
+import ViewProducts from "./ViewProducts";
+import axiosInstance from "../../api/axiosInstance";
+import { handleLogout } from "../../utils/authHelper";
+import Swal from "sweetalert2";
 
 const AdminDashboard = () => {
-  const [products, setProducts] = useState([]);
-  // const [selectedProduct, setSelectedProduct] = useState(null);
+  const { products, setProducts } = useContext(ProductContext);
   const [activeSection, setActiveSection] = useState("view");
+  const [editProduct, setEditProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(false);
 
-  // Load saved products
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get("/products");
+      setProducts(res.data.items || res.data || []);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to load products",
+        text: "Please try again later.",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [setProducts]);
+
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("products")) || [];
-    setProducts(saved);
-  }, []);
+    if (!mountedRef.current) {
+      fetchProducts();
+      mountedRef.current = true;
+    }
+  }, [fetchProducts]);
 
-  // Save to localStorage whenever updated
-  useEffect(() => {
-    localStorage.setItem("products", JSON.stringify(products));
-  }, [products]);
+  // Add/Edit product with SweetAlert2 loading
+const handleSubmitProduct = async (productData) => {
+  let swalLoading;
+  try {
+    swalLoading = Swal.fire({
+      title: editProduct ? "Updating product..." : "Uploading product...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-  // Add product
-  const handleAddProduct = (product) => {
-    setProducts([...products, { ...product, id: Date.now() }]);
+    const formData = new FormData();
+    formData.append("productName", productData.productName);
+    formData.append("category", productData.category);
+    formData.append("description", productData.description);
+    if (productData.file) formData.append("image", productData.file);
+
+    let res;
+    if (editProduct) {
+      res = await axiosInstance.put(`/admin/products/${editProduct._id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setProducts(products.map((p) => (p._id === editProduct._id ? res.data : p)));
+      setEditProduct(null);
+    } else {
+      res = await axiosInstance.post("/admin/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setProducts([...products, res.data]);
+    }
+
+    // Refetch products for category page if needed
+    fetchProducts();
+
+    Swal.fire("Success", editProduct ? "Product updated!" : "Product uploaded!", "success");
+    setActiveSection("view");
+  } catch (err) {
+    console.error(err);
+    Swal.fire("Error", "Failed to submit product.", "error");
+  }
+};
+
+  // Delete product with SweetAlert2 confirmation
+  const handleDelete = async (id) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
+      });
+
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Deleting...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        await axiosInstance.delete(`/admin/products/${id}`);
+        fetchProducts();
+
+        Swal.close();
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Product has been deleted.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      Swal.fire("Error", "Failed to delete product. Please try again.", "error");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditProduct(null);
     setActiveSection("view");
   };
 
-  // Delete product
-  const handleDelete = (id) => {
-    const filtered = products.filter((p) => p.id !== id);
-    setProducts(filtered);
+  const handleEdit = (product) => {
+    setEditProduct(product);
+    setActiveSection("add");
   };
 
-  // Logout
-  const handleLogout = () => {
-    localStorage.removeItem("adminLoggedIn");
-    alert("Logged out successfully");
-    window.location.href = "/";
+  const logout = () => {
+    handleLogout("Logging out ...");
   };
 
   return (
     <div className="flex h-screen bg-gray-100 pt-[90px]">
-      {/* Sidebar */}
-      <Sidebar
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        onLogout={handleLogout}
-      />
-
-      {/* Main Area */}
+      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} onLogout={logout} />
       <div className="flex flex-col flex-1">
         <Header />
-
         <main className="p-6 overflow-auto">
           <h1 className="text-2xl font-semibold mb-6">Admin Dashboard</h1>
 
-          {/* Conditional Rendering */}
-          {activeSection === "view" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.length === 0 ? (
-                <p className="text-gray-600 text-lg">
-                  No products uploaded yet.
-                </p>
-              ) : (
-                products.map((product) => (
-                  <div
-                    key={product.id}
-                    className="bg-white rounded-lg shadow-md p-4 flex flex-col"
-                  >
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-md"
-                    />
-                    <h3 className="text-lg font-semibold mt-3 text-gray-800">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mt-2 line-clamp-2">
-                      {product.description || "No description provided."}
-                    </p>
-
-                    <div className="flex justify-between items-center mt-4">
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="bg-red-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-red-600 transition"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+          {loading ? (
+            <p className="text-gray-600">Loading products...</p>
+          ) : activeSection === "view" ? (
+            <ViewProducts products={products} onDelete={handleDelete} onEdit={handleEdit} />
+          ) : (
+            <ProductForms onAdd={handleSubmitProduct} product={editProduct} onCancel={handleCancelEdit} />
           )}
-
-          {activeSection === "add" && <ProductForm onAdd={handleAddProduct} />}
         </main>
       </div>
     </div>
