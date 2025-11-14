@@ -7,7 +7,7 @@ import redis from "../config/redis";
 import { generateTokens } from "./tokenControllers";
 
 // LOGIN
-
+ 
 export const login = async (req: Request, res: Response) => {
   try {
     // Trim and normalize inputs
