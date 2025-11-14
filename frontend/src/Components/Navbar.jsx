@@ -24,7 +24,7 @@ const Navbar = () => {
   const handleMouseLeave = () => {
     closeTimeoutRef.current = setTimeout(() => {
       setDropdownOpen(false);
-    }, 300);
+    }, 200);
   };
 
   const toggleMenu = () => setIsOpen(!isOpen);
