@@ -48,7 +48,7 @@ const Home = () => {
   return (
     <>
       {/* HERO CAROUSEL */}
-      <div className="pt-[90px]">
+      <div className="pt-[85px]">
         <Carousel />
       </div>
 
