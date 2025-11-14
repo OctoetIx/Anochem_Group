@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { ProductContext } from "../context/ProductContext";
 import axiosInstance from "../api/axiosInstance";
 
@@ -19,11 +20,12 @@ const ProductCard = ({ product }) => {
   }, [product._id]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md  flex flex-col">
+    <Link to={`/products/${product._id}`} className="no-underline text-black w-full">
+    <div className="bg-white rounded-lg shadow-md mt-6 w-full flex flex-col">
       <img
         src={product.imageUrl}
         alt={product.productName}
-        className="w-auto h-48 object-cover rounded-md"
+        className="w-1/2 h-48 object-cover rounded-md flex justify-center"
       />
       <h3 className="text-lg font-semibold mt-3 px-4">{product.productName}</h3>
       <p className="text-gray-600 mt-2 px-4">{product.description}</p>
@@ -46,6 +48,7 @@ const ProductCard = ({ product }) => {
         </div>
       )}
     </div>
+    </Link>
   );
 };
 
@@ -71,7 +74,7 @@ const ProductPage = () => {
     <div className="px-6 py-32 space-y-8">
       {Object.keys(grouped).map((category) => (
         <div key={category}>
-          <h2 className="text-xl font-semibold mb-4">{category}</h2>
+          <h2 className="text-xl font-semibold m-4">{category}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {grouped[category].map((product) => (
               <ProductCard key={product._id} product={product} />

@@ -9,6 +9,7 @@ import LoginPage from "./auth/Login";
 import InquiryForm from "./Components/InquiryForm";
 import ContactPage from "./Components/ContactPage";
 import ProductPage from "./Components/ProductPage";
+import ProductDetails from "./Components/ProductDetails";
 import AdminDashboard from "./Components/admin/AdminDashboard";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import RegisterPage from "./auth/Register";
@@ -16,6 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify"; // 
 import { ProductProvider } from "./context/ProductContext";
 import CategoryPages from "./Components/CategoryPages"
+
 
 
 
@@ -30,6 +32,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductPage />} />
+          <Route path="/products/:_id" element={<ProductDetails />} />
            <Route path="/products/:slug" element={<CategoryPages />} />
           <Route path="/about" element={<About />} />
           <Route path="/inquiry" element={<InquiryForm />} />
