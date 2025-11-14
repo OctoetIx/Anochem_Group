@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Menu, X } from "lucide-react"; // hamburger + close icons
+import React, { useState, useRef } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import logo1 from "../assets/logo1.png";
 
 const categories = [
@@ -12,9 +12,10 @@ const categories = [
 ];
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const closeTimeoutRef = React.useRef();
+  const [isOpen, setIsOpen] = useState(false); // mobile menu
+  const [dropdownOpen, setDropdownOpen] = useState(false); // desktop dropdown
+  const closeTimeoutRef = useRef(null);
+  const location = useLocation();
 
   const handleMouseEnter = () => {
     clearTimeout(closeTimeoutRef.current);
@@ -29,9 +30,17 @@ const Navbar = () => {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  const handleDropdownLinkClick = () => setDropdownOpen(false);
+
+  // FIXED: correct active check to match the correct route
+  const isCategoryActive = (slug) => {
+    return location.pathname === `/products/category/${slug}`;
+  };
+
   return (
-    <nav className="top-0 left-0 w-full bg-black text-white shadow-md z-50 fixed">
+    <nav className="fixed top-0 left-0 w-full bg-black text-white shadow-md z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
         {/* Logo */}
         <NavLink to="/">
           <div className="flex items-center text-yellow-500 cursor-pointer">
@@ -51,7 +60,8 @@ const Navbar = () => {
           >
             Home
           </NavLink>
-          {/* Dropdown Menu */}
+
+          {/* Desktop Dropdown */}
           <div
             className="relative inline-block"
             onMouseEnter={handleMouseEnter}
@@ -59,43 +69,28 @@ const Navbar = () => {
           >
             <NavLink
               to="/products"
-              className="hover:text-yellow-500 font-semibold transition-colors"
+              className="hover:text-yellow-500 font-semibold cursor-pointer"
             >
               Our Products ▾
             </NavLink>
 
             {dropdownOpen && (
-              <div className="absolute left-0 mt-2 w-48 bg-black rounded-2xl text-yellow-500 z-20">
-                <NavLink
-                  to="/products/skin-care"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Skin Care
-                </NavLink>
-                <NavLink
-                  to="/products/hair-care"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Hair Care
-                </NavLink>
-                <NavLink
-                  to="/products/body-lotion"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Body Lotion
-                </NavLink>
-                <NavLink
-                  to="/products/antiseptics"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Antiseptics
-                </NavLink>
-                <NavLink
-                  to="/products/toiletries"
-                  className="block px-4 py-2 hover:bg-white hover:text-black"
-                >
-                  Toiletries
-                </NavLink>
+              <div className="absolute left-0 mt-2 w-48 bg-black rounded-2xl text-yellow-500 z-20 shadow-lg">
+                {categories.map((cat) => (
+                  <NavLink
+                    key={cat.slug}
+                    to={`/products/category/${cat.slug}`}   // FIXED
+                    className={({ isActive }) =>
+                      `block px-4 py-2 rounded hover:bg-white hover:text-black ${
+                        isCategoryActive(cat.slug) ? "bg-yellow-500 text-black" : ""
+                      }`
+                    }
+                    onClick={handleDropdownLinkClick}
+                    end
+                  >
+                    {cat.name}
+                  </NavLink>
+                ))}
               </div>
             )}
           </div>
@@ -154,13 +149,25 @@ const Navbar = () => {
             Home
           </NavLink>
 
+          {/* All products link */}
+          <NavLink
+            to="/products"
+            onClick={toggleMenu}
+            className="block text-white hover:text-yellow-500"
+          >
+            All Products
+          </NavLink>
+
           {/* Mobile categories */}
           {categories.map((cat) => (
             <NavLink
               key={cat.slug}
-              to={`/products/${cat.slug}`}
+              to={`/products/category/${cat.slug}`}   // FIXED
               onClick={toggleMenu}
-              className="block text-white hover:text-yellow-500"
+              className={`block text-white hover:text-yellow-500 ${
+                isCategoryActive(cat.slug) ? "bg-yellow-500 text-black rounded" : ""
+              }`}
+              end
             >
               {cat.name}
             </NavLink>
@@ -173,6 +180,7 @@ const Navbar = () => {
           >
             About Us
           </NavLink>
+
           <NavLink
             to="/inquiry"
             onClick={toggleMenu}
@@ -180,6 +188,7 @@ const Navbar = () => {
           >
             Inquiry
           </NavLink>
+
           <NavLink
             to="/contact"
             onClick={toggleMenu}
