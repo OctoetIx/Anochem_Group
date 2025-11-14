@@ -90,7 +90,7 @@ const ContactPage = () => {
 
   return (
    <>
-     <div className="pt-[100px] min-h-screen bg-white flex flex-col md:flex-row justify-center items-start p-8 md:p-16 gap-10">
+     <div className="min-h-screen bg-white flex flex-col md:flex-row justify-center items-start p-8 md:p-16 gap-10 mt-[100px]">
       {/* Left Side - Contact Form */}
       <motion.div
         className="bg-black text-white p-10 flex-1 w-full rounded-xl shadow-lg"

@@ -14,11 +14,23 @@ const categories = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const closeTimeoutRef = React.useRef();
+
+  const handleMouseEnter = () => {
+    clearTimeout(closeTimeoutRef.current);
+    setDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setDropdownOpen(false);
+    }, 300);
+  };
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-black text-white shadow-md z-50">
+    <nav className="top-0 left-0 w-full bg-black text-white shadow-md z-50 fixed">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <NavLink to="/">
@@ -39,37 +51,54 @@ const Navbar = () => {
           >
             Home
           </NavLink>
-{/* Dropdown Menu */}
-<div className="relative inline-block"
-     onMouseEnter={() => setDropdownOpen(true)}
-     onMouseLeave={() => setDropdownOpen(false)}>
-  <NavLink
-    to="/products"
-    className="hover:text-yellow-500 font-semibold transition-colors"
-  >
-    Our Products ▾
-  </NavLink>
+          {/* Dropdown Menu */}
+          <div
+            className="relative inline-block"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <NavLink
+              to="/products"
+              className="hover:text-yellow-500 font-semibold transition-colors"
+            >
+              Our Products ▾
+            </NavLink>
 
-  {dropdownOpen && (
-    <div className="absolute left-0 mt-2 w-48 bg-black rounded-2xl text-yellow-500 z-20">
-      <NavLink to="/products/skin-care" className="block px-4 py-2 hover:bg-white hover:text-black">
-        Skin Care
-      </NavLink>
-      <NavLink to="/products/hair-care" className="block px-4 py-2 hover:bg-white hover:text-black">
-        Hair Care
-      </NavLink>
-      <NavLink to="/products/body-lotion" className="block px-4 py-2 hover:bg-white hover:text-black">
-        Body Lotion
-      </NavLink>
-      <NavLink to="/products/antiseptics" className="block px-4 py-2 hover:bg-white hover:text-black">
-        Antiseptics
-      </NavLink>
-      <NavLink to="/products/toiletries" className="block px-4 py-2 hover:bg-white hover:text-black">
-        Toiletries
-      </NavLink>
-    </div>
-  )}
-</div>
+            {dropdownOpen && (
+              <div className="absolute left-0 mt-2 w-48 bg-black rounded-2xl text-yellow-500 z-20">
+                <NavLink
+                  to="/products/skin-care"
+                  className="block px-4 py-2 hover:bg-white hover:text-black"
+                >
+                  Skin Care
+                </NavLink>
+                <NavLink
+                  to="/products/hair-care"
+                  className="block px-4 py-2 hover:bg-white hover:text-black"
+                >
+                  Hair Care
+                </NavLink>
+                <NavLink
+                  to="/products/body-lotion"
+                  className="block px-4 py-2 hover:bg-white hover:text-black"
+                >
+                  Body Lotion
+                </NavLink>
+                <NavLink
+                  to="/products/antiseptics"
+                  className="block px-4 py-2 hover:bg-white hover:text-black"
+                >
+                  Antiseptics
+                </NavLink>
+                <NavLink
+                  to="/products/toiletries"
+                  className="block px-4 py-2 hover:bg-white hover:text-black"
+                >
+                  Toiletries
+                </NavLink>
+              </div>
+            )}
+          </div>
 
           <NavLink
             to="/about"

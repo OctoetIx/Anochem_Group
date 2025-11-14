@@ -17,7 +17,7 @@ const InquiryForm = () => {
 
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12 pt-[100px]">
+    <div className="max-w-4xl mx-auto px-6 py-32">
       <h2 className="text-4xl font-bold text-gray-800 mb-4 text-center">
         LET’S CONNECT WITH YOU
       </h2>

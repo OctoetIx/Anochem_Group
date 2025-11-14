@@ -19,19 +19,19 @@ const ProductCard = ({ product }) => {
   }, [product._id]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
+    <div className="bg-white rounded-lg shadow-md  flex flex-col">
       <img
         src={product.imageUrl}
         alt={product.productName}
-        className="w-full h-48 object-cover rounded-md"
+        className="w-auto h-48 object-cover rounded-md"
       />
-      <h3 className="text-lg font-semibold mt-3">{product.productName}</h3>
-      <p className="text-gray-600 mt-2">{product.description}</p>
+      <h3 className="text-lg font-semibold mt-3 px-4">{product.productName}</h3>
+      <p className="text-gray-600 mt-2 px-4">{product.description}</p>
 
       {related.length > 0 && (
         <div className="mt-4">
-          <h4 className="font-semibold mb-2 text-sm">Related Products:</h4>
-          <div className="flex gap-2 overflow-x-auto">
+          <h4 className="font-semibold mb-2 text-sm px-4">Related Products:</h4>
+          <div className="flex gap-2 overflow-x-auto px-4 pb-4">
             {related.map((r) => (
               <div key={r._id} className="flex-shrink-0 w-32 bg-gray-100 p-2 rounded">
                 <img
@@ -63,8 +63,12 @@ const ProductPage = () => {
     return acc;
   }, {});
 
+  if (Object.keys(grouped).length === 0) {
+  return <p className="p-6">Products not available.</p>;
+}
+
   return (
-    <div className="p-6 space-y-8">
+    <div className="px-6 py-32 space-y-8">
       {Object.keys(grouped).map((category) => (
         <div key={category}>
           <h2 className="text-xl font-semibold mb-4">{category}</h2>
