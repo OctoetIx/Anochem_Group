@@ -137,12 +137,11 @@ const handleSubmitProduct = async (productData) => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 pt-[90px]">
+    <div className="flex h-screen bg-gray-100 pt-[85px]">
       <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} onLogout={logout} />
       <div className="flex flex-col flex-1">
         <Header />
         <main className="p-6 overflow-auto">
-          <h1 className="text-2xl font-semibold mb-6">Admin Dashboard</h1>
 
           {loading ? (
             <p className="text-gray-600">Loading products...</p>
