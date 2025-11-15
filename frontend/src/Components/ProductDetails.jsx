@@ -55,7 +55,7 @@ const ProductDetails = () => {
   if (!product) return <p className="pt-32 p-6">Product not found</p>;
 
   return (
-    <div className="pt-32 px-6 max-w-4xl mx-auto">
+    <div className="pt-32 px-6 max-w-4xl mx-auto mb-8">
       <Link to="/products" className="text-blue-500 underline mb-4 inline-block">
         Back to Products
       </Link>
@@ -63,7 +63,7 @@ const ProductDetails = () => {
       <img
         src={product.imageUrl}
         alt={product.productName}
-        className="w-full h-80 object-cover rounded-lg mb-6"
+        className="w-full object-cover rounded-lg mb-6 h-fit"
       />
 
       <h1 className="text-2xl font-bold">{product.productName}</h1>

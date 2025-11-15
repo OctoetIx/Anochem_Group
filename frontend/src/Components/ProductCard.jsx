@@ -8,7 +8,7 @@ const ProductCard = ({ product }) => {
         <img
           src={product.imageUrl}
           alt={product.productName}
-          className="w-full h-36 object-cover"
+          className="w-full h-52 object-cover"
         />
         <div className="p-3 flex flex-col gap-1">
           <h3 className="text-md font-semibold">{product.productName}</h3>
