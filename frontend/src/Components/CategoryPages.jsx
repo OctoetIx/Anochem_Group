@@ -25,7 +25,7 @@ const CategoryPages = () => {
         {filteredProducts.map(product => (
           <div
             key={product._id}
-            className="border rounded-xl overflow-hidden shadow-md bg-black text-white"
+            className="rounded-xl overflow-hidden shadow-md bg-white text-black hover:shadow-xl transition-shadow duration-300"
           >
             <img
               src={product.imageUrl}
