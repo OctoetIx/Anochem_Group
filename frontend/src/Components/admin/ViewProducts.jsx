@@ -24,7 +24,7 @@ const ViewProducts = ({ products, onDelete, onEdit }) => {
               )}
               <div className="mt-3">
                 <h3 className="text-lg font-semibold">{product.productName}</h3>
-                <p className="text-gray-600 text-sm">{product.description}</p>
+                {/* <p className="text-gray-600 text-sm">{product.description}</p> */}
                 <p className="text-sm text-gray-500 mt-1">
                   Category: {product.category}
                 </p>

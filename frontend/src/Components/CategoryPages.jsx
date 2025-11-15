@@ -16,10 +16,10 @@ const CategoryPages = () => {
 
   if (loading) return <p className="text-center mt-8">Loading products...</p>;
   if (!slug || filteredProducts.length === 0)
-    return <p className="text-center mt-8">No products found in this category</p>;
+    return <p className="text-center my-80">No products found in this category</p>;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-6 py-32">
       <h1 className="text-3xl font-bold text-yellow-500 mb-6">{categoryTitle}</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredProducts.map(product => (

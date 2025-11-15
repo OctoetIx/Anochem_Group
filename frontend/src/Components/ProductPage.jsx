@@ -20,7 +20,7 @@ const ProductPage = () => {
       {Object.keys(grouped).map((category) => (
         <div key={category}>
           <h2 className="text-xl font-semibold mb-4">{category}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {grouped[category].map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
