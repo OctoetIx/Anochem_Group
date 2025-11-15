@@ -55,7 +55,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "text-yellow-500 font-semibold"
-                : "text-white hover:text-yellow-500 hover:underline"
+                : "text-white hover:text-yellow-500"
             }
           >
             Home
