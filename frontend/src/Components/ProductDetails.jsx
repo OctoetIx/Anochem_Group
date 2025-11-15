@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
+import { ArrowLeft } from "lucide-react";
 
 const ProductDetails = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -56,9 +58,13 @@ const ProductDetails = () => {
 
   return (
     <div className="pt-32 px-6 max-w-4xl mx-auto mb-8">
-      <Link to="/products" className="text-blue-500 underline mb-4 inline-block">
-        Back to Products
-      </Link>
+      <button
+        onClick={() => navigate(-1)}
+        className="inline-flex items-center gap-2 px-3 py-2 bg-black text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-black mb-6 cursor-pointer"
+      >
+        <ArrowLeft size={18} />
+        Back
+      </button>
 
       <img
         src={product.imageUrl}
@@ -88,7 +94,9 @@ const ProductDetails = () => {
                     alt={p.productName}
                     className="w-full h-40 object-cover rounded"
                   />
-                  <h3 className="mt-2 font-semibold text-sm">{p.productName}</h3>
+                  <h3 className="mt-2 font-semibold text-sm">
+                    {p.productName}
+                  </h3>
                 </Link>
               ))}
             </div>
