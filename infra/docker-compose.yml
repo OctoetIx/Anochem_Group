@@ -1,21 +1,22 @@
+version: "3.8"
+
 services:
-  # ----------------------------
-  # Backend Service (TypeScript)
-  # ----------------------------
   backend:
     build:
-      context: ../backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: myapp_backend
     restart: unless-stopped
+    env_file: 
+      - ./env/backend.env
     environment:
-      NODE_ENV: ${NODE_ENV}
-      PORT: ${PORT}
-      MONGO_URI: ${MONGO_URI}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_USERNAME: ${REDIS_USERNAME}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
+      - MONGO_URI=${MONGO_URI}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CORS_ORIGIN=http://94.141.160.116
     expose:
       - "2000"
     depends_on:
@@ -23,25 +24,21 @@ services:
     networks:
       - webnet
 
-  # ----------------------------
-  # Frontend Service (Vite + Nginx)
-  # ----------------------------
   frontend:
     build:
-      context: ../frontend
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: myapp_frontend
     restart: unless-stopped
+    environment:
+      - NODE_ENV=${NODE_ENV}
     expose:
       - "80"
     networks:
       - webnet
 
-  # ----------------------------
-  # Nginx Reverse Proxy
-  # ----------------------------
   nginx:
-    image: nginx:stable
+    image: nginx:stable-alpine
     container_name: myapp_nginx
     restart: unless-stopped
     ports:
@@ -54,25 +51,18 @@ services:
     networks:
       - webnet
 
-
-  # ----------------------------
-  # Redis Service with Auth
-  # ----------------------------
   redis:
     image: redis:7-alpine
     container_name: myapp_redis
     restart: unless-stopped
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}   # password from .env
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     ports:
       - "${REDIS_PORT}:6379"
     networks:
       - webnet
 
-# ----------------------------
-# Networks
-# ----------------------------
 networks:
   webnet:
     driver: bridge
