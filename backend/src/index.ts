@@ -9,7 +9,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { sanitizeMiddleware } from './middleware/sanitize';
 import {connectToDatabase} from './config/db';
-import redis from './config/redis';
+import redis, { connectRedis } from './config/redis';
 import cloudinary from './config/cloudinary';
 import cookieParser from 'cookie-parser';
 
@@ -73,7 +73,7 @@ const PORT = process.env.PORT || 2000;
     await connectToDatabase();
     console.log(" MongoDB connected successfully"); 
 
-    await redis.connect();
+    await connectRedis();
     console.log("Redis connected successfully");
 
     const pongResult = await redis.ping();
