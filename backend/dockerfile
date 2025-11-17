@@ -1,11 +1,32 @@
+# Stage 1: Build
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Install all dependencies (dev + prod) for TypeScript build
+COPY package*.json ./
+RUN npm ci
+
+# Copy all source files
+COPY . .
+
+# Build TypeScript
+RUN npm run build
+
+# Stage 2: Production
 FROM node:18-alpine
 
 WORKDIR /app
 
+# Install only production dependencies
 COPY package*.json ./
 RUN npm ci --production
 
-COPY . .
+# Copy compiled JS from builder
+COPY --from=builder /app/dist ./dist
 
+# Expose backend port
 EXPOSE 2000
-CMD ["npm", "start"]
+
+# Start the backend
+CMD ["node", "dist/index.js"]
