@@ -9,19 +9,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2. Login to Docker Hub
       - name: Docker Login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 3. Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Backend Image
+      # 4. Build & Push Backend Image (FIXED)
       - name: Build & Push Backend Image
         run: |
           docker buildx build \
@@ -31,7 +34,7 @@ jobs:
             ./backend \
             --push
 
-      # Frontend Image
+      # 5. Build & Push Frontend Image (FIXED)
       - name: Build & Push Frontend Image
         run: |
           docker buildx build \
@@ -41,6 +44,7 @@ jobs:
             ./frontend \
             --push
 
+      # 6. SSH into VPS and deploy
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -51,14 +55,19 @@ jobs:
             set -e
             cd /root/myapp/infra
 
+            # Update tags in .env
             sed -i '/^BACKEND_TAG=/d' .env
             sed -i '/^FRONTEND_TAG=/d' .env
             echo "BACKEND_TAG=${{ github.sha }}" >> .env
             echo "FRONTEND_TAG=${{ github.sha }}" >> .env
 
+            # Pull updated images
             docker compose pull
+
+            # Restart containers
             docker compose up -d --remove-orphans
 
+            # Backend health check
             echo "Checking backend health..."
             for i in {1..12}; do
               status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2000/api/test || echo "000")
@@ -71,6 +80,7 @@ jobs:
               fi
             done
 
+            # Frontend health check
             echo "Checking frontend health..."
             for i in {1..12}; do
               status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost || echo "000")
