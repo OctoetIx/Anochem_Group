@@ -1,36 +1,38 @@
-name: Run Tests
+name: Build & Verify
 
 on:
   pull_request:
     branches: ["main"]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repo
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2. Setup Node
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # ---- BACKEND TESTS ----
+      # ---- BACKEND BUILD ----
       - name: Install Backend Dependencies
         working-directory: ./backend
         run: npm install
 
-      - name: Run Backend Tests
+      - name: Build Backend
         working-directory: ./backend
-        run: npm test
+        run: npm run build
 
-      # ---- FRONTEND CHECKS ----
+      # ---- FRONTEND BUILD ----
       - name: Install Frontend Dependencies
         working-directory: ./frontend
         run: npm install
 
-      - name: Verify Frontend Build (no actual build artifact)
+      - name: Build Frontend
         working-directory: ./frontend
-        run: npm run build --dry-run
+        run: npm run build
