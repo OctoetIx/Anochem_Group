@@ -24,22 +24,28 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 4. Build & Push Backend Image (FIXED)
+      # 4. Build & Push Backend Image (UNBREAKABLE)
       - name: Build & Push Backend Image
         run: |
+          BACKEND_TAG="${{ secrets.DOCKERHUB_USER }}/myapp-backend:${{ github.sha }}"
+          echo "Building backend: $BACKEND_TAG"
+
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            -t ${{ secrets.DOCKERHUB_USER }}/myapp-backend:${{ github.sha }} \
+            -t "$BACKEND_TAG" \
             -f backend/Dockerfile \
             ./backend \
             --push
 
-      # 5. Build & Push Frontend Image (FIXED)
+      # 5. Build & Push Frontend Image (UNBREAKABLE)
       - name: Build & Push Frontend Image
         run: |
+          FRONTEND_TAG="${{ secrets.DOCKERHUB_USER }}/myapp-frontend:${{ github.sha }}"
+          echo "Building frontend: $FRONTEND_TAG"
+
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            -t ${{ secrets.DOCKERHUB_USER }}/myapp-frontend:${{ github.sha }} \
+            -t "$FRONTEND_TAG" \
             -f frontend/Dockerfile \
             ./frontend \
             --push
@@ -55,13 +61,13 @@ jobs:
             set -e
             cd /root/myapp/infra
 
-            # Update tags in .env
+            # Update image tags in .env
             sed -i '/^BACKEND_TAG=/d' .env
             sed -i '/^FRONTEND_TAG=/d' .env
             echo "BACKEND_TAG=${{ github.sha }}" >> .env
             echo "FRONTEND_TAG=${{ github.sha }}" >> .env
 
-            # Pull updated images
+            # Pull latest images
             docker compose pull
 
             # Restart containers
