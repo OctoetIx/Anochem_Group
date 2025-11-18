@@ -9,6 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 0. Use latest Node + npm
+      - name: Setup Latest Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Update npm to latest
+        run: npm install -g npm@latest
+
       # 1. Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -63,42 +72,35 @@ jobs:
             set -e
             cd /root/myapp/infra
 
-            # Update image tags in .env
             sed -i '/^BACKEND_TAG=/d' .env
             sed -i '/^FRONTEND_TAG=/d' .env
+
             echo "BACKEND_TAG=${CLEAN_USER}/myapp-backend:${{ github.sha }}" >> .env
             echo "FRONTEND_TAG=${CLEAN_USER}/myapp-frontend:${{ github.sha }}" >> .env
 
-            # Pull latest images
             docker compose pull
-
-            # Restart containers
             docker compose up -d --remove-orphans
 
-            # Backend health check
             echo "Checking backend health..."
             for i in {1..12}; do
               status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2000/api/test || echo "000")
               if [ "$status" = "200" ]; then
                 echo "Backend is up!"
                 break
-              else
-                echo "Waiting for backend... ($i/12)"
-                sleep 5
               fi
+              echo "Waiting for backend... ($i/12)"
+              sleep 5
             done
 
-            # Frontend health check
             echo "Checking frontend health..."
             for i in {1..12}; do
               status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost || echo "000")
               if [ "$status" = "200" ]; then
                 echo "Frontend is up!"
                 break
-              else
-                echo "Waiting for frontend... ($i/12)"
-                sleep 5
               fi
+              echo "Waiting for frontend... ($i/12)"
+              sleep 5
             done
 
             echo "Deployment complete!"
