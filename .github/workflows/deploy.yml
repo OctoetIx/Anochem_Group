@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repo
+      # 1. Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
@@ -20,21 +20,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 3. Build Backend Image
-      - name: Build Backend
+      # 3. Build Backend Docker Image
+      - name: Build Backend Image
         run: |
           docker build \
             -t ${{ secrets.DOCKERHUB_USER }}/myapp-backend:${{ github.sha }} \
             -f backend/Dockerfile ./backend
 
-      # 4. Build Frontend Image
-      - name: Build Frontend
+      # 4. Build Frontend Docker Image
+      - name: Build Frontend Image
         run: |
           docker build \
             -t ${{ secrets.DOCKERHUB_USER }}/myapp-frontend:${{ github.sha }} \
             -f frontend/Dockerfile ./frontend
 
-      # 5. Push images
+      # 5. Push Docker Images to Docker Hub
       - name: Push Backend Image
         run: docker push ${{ secrets.DOCKERHUB_USER }}/myapp-backend:${{ github.sha }}
 
@@ -49,21 +49,23 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_KEY }}
           script: |
+            set -e
+
             cd /root/myapp/infra
 
-            echo "Updating image tags in .env..."
+            # Update image tags in .env
             sed -i '/^BACKEND_TAG=/d' .env
             sed -i '/^FRONTEND_TAG=/d' .env
             echo "BACKEND_TAG=${{ github.sha }}" >> .env
             echo "FRONTEND_TAG=${{ github.sha }}" >> .env
 
-            echo "Pulling new images..."
+            # Pull latest images
             docker compose pull
 
-            echo "Restarting services..."
+            # Restart containers
             docker compose up -d --remove-orphans
 
-            # Backend health check
+            # --- Health Checks ---
             echo "Checking backend health..."
             for i in {1..12}; do
               status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2000/api/test || echo "000")
@@ -76,7 +78,6 @@ jobs:
               fi
             done
 
-            # Frontend health check
             echo "Checking frontend health..."
             for i in {1..12}; do
               status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost || echo "000")
