@@ -24,7 +24,7 @@ Features
 	•	Refresh tokens for secure and persistent admin sessions
 	•	Role-based admin authorization
 
-🚀 Fully Automated CI/CD
+ Fully Automated CI/CD
 	•	GitHub Actions pipeline
 	•	Builds, tests, and deploys automatically on each push to the main branch
 	•	Ensures consistent and reliable deployments with zero manual step
