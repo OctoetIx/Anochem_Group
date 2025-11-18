@@ -52,57 +52,74 @@ const ProductDetails = () => {
     fetchRelated();
   }, [product]);
 
-  if (loading) return <p className="pt-32 p-6">Loading product...</p>;
-  if (error) return <p className="pt-32 p-6 text-red-500">{error}</p>;
-  if (!product) return <p className="pt-32 p-6">Product not found</p>;
+  if (loading) return <p className="pt-32 p-6 text-center">Loading product...</p>;
+  if (error) return <p className="pt-32 p-6 text-red-500 text-center">{error}</p>;
+  if (!product) return <p className="pt-32 p-6 text-center">Product not found</p>;
 
   return (
-    <div className="pt-32 px-6 max-w-4xl mx-auto mb-8">
-      <button
-        onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 px-3 py-2 bg-black text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-black mb-6 cursor-pointer"
-      >
-        <ArrowLeft size={18} />
-        Back
-      </button>
+    <div className="flex flex-col min-h-screen">
+      {/* Main content */}
+      <div className="flex-1 pt-32 px-6 max-w-4xl mx-auto mb-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 px-3 py-2 bg-black text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-black mb-6 cursor-pointer"
+        >
+          <ArrowLeft size={18} />
+          Back
+        </button>
 
-      <img
-        src={product.imageUrl}
-        alt={product.productName}
-        className="w-full object-cover rounded-lg mb-6 h-fit"
-      />
-
-      <h1 className="text-2xl font-bold">{product.productName}</h1>
-      <p className="text-gray-700 mt-4">{product.description}</p>
-
-      {related.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold mb-4">Related Products</h2>
-
-          {loadingRelated ? (
-            <p>Loading related products...</p>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {related.map((p) => (
-                <Link
-                  key={p._id}
-                  to={`/products/${p._id}`}
-                  className="border rounded-lg p-2 hover:shadow-md transition"
-                >
-                  <img
-                    src={p.imageUrl}
-                    alt={p.productName}
-                    className="w-full h-40 object-cover rounded"
-                  />
-                  <h3 className="mt-2 font-semibold text-sm">
-                    {p.productName}
-                  </h3>
-                </Link>
-              ))}
-            </div>
-          )}
+        {/* Center main product image */}
+        <div className="flex justify-center mb-6">
+          <img
+            src={product.imageUrl}
+            alt={product.productName}
+            loading="lazy"
+            className="object-contain max-h-[500px] w-full sm:w-3/4 lg:w-1/2 rounded-lg"
+          />
         </div>
-      )}
+
+        <h1 className="text-2xl font-bold text-center">{product.productName}</h1>
+        <p className="text-gray-700 mt-4 text-center">{product.description}</p>
+
+        {related.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-xl font-semibold mb-4 text-center">
+              Related Products
+            </h2>
+
+            {loadingRelated ? (
+              <p className="text-center">Loading related products...</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
+                {related.map((p) => (
+                  <Link
+                    key={p._id}
+                    to={`/products/${p._id}`}
+                    className="border rounded-lg p-2 hover:shadow-lg transition w-full max-w-xs h-full flex flex-col"
+                  >
+                    <div className="flex justify-center items-center h-40 overflow-hidden">
+                      <img
+                        src={p.imageUrl}
+                        alt={p.productName}
+                        loading="lazy"
+                        className="object-contain w-full h-full rounded transform transition-transform duration-300 hover:scale-105"
+                      />
+                    </div>
+                    <h3 className="mt-2 font-semibold text-sm text-center flex-1 flex items-center justify-center">
+                      {p.productName}
+                    </h3>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-4 text-center mt-auto">
+        
+      </footer>
     </div>
   );
 };
