@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 0. Use latest Node + npm
+      # 0. Latest Node + npm
       - name: Setup Latest Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Update npm to latest
+      - name: Update npm
         run: npm install -g npm@latest
 
       # 1. Checkout repository
@@ -29,39 +29,33 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 3. Set up Docker Buildx
-      - name: Set up Docker Buildx
+      # 3. Setup Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 4. Build & Push Backend Image
-      - name: Build & Push Backend Image
+      # 4. Build + Push Backend Image
+      - name: Build & Push Backend
         run: |
-          CLEAN_USER="$(echo "${{ secrets.DOCKERHUB_USER }}" | tr -d '[:space:]')"
-          BACKEND_TAG="${CLEAN_USER}/myapp-backend:${{ github.sha }}"
-          echo "Building backend: $BACKEND_TAG"
-
+          USER="${{ secrets.DOCKERHUB_USER }}"
+          TAG="$USER/myapp-backend:${{ github.sha }}"
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            -t "$BACKEND_TAG" \
-            -f backend/Dockerfile \
-            ./backend \
+            -t "$TAG" \
+            -f backend/Dockerfile ./backend \
             --push
 
-      # 5. Build & Push Frontend Image
-      - name: Build & Push Frontend Image
+      # 5. Build + Push Frontend Image
+      - name: Build & Push Frontend
         run: |
-          CLEAN_USER="$(echo "${{ secrets.DOCKERHUB_USER }}" | tr -d '[:space:]')"
-          FRONTEND_TAG="${CLEAN_USER}/myapp-frontend:${{ github.sha }}"
-          echo "Building frontend: $FRONTEND_TAG"
-
+          USER="${{ secrets.DOCKERHUB_USER }}"
+          TAG="$USER/myapp-frontend:${{ github.sha }}"
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            -t "$FRONTEND_TAG" \
-            -f frontend/Dockerfile \
-            ./frontend \
+            -t "$TAG" \
+            -f frontend/Dockerfile ./frontend \
             --push
 
-      # 6. SSH into VPS and deploy
+      # 6. SSH Deploy
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -72,34 +66,36 @@ jobs:
             set -e
             cd /root/myapp/infra
 
+            # Write image tags
             sed -i '/^BACKEND_TAG=/d' .env
             sed -i '/^FRONTEND_TAG=/d' .env
 
-            echo "BACKEND_TAG=${CLEAN_USER}/myapp-backend:${{ github.sha }}" >> .env
-            echo "FRONTEND_TAG=${CLEAN_USER}/myapp-frontend:${{ github.sha }}" >> .env
+            echo "BACKEND_TAG=${{ secrets.DOCKERHUB_USER }}/myapp-backend:${{ github.sha }}" >> .env
+            echo "FRONTEND_TAG=${{ secrets.DOCKERHUB_USER }}/myapp-frontend:${{ github.sha }}" >> .env
 
-            docker compose pull
+            # Pull only updated images (redis/nginx skipped)
+            docker compose pull backend frontend
+
             docker compose up -d --remove-orphans
 
-            echo "Checking backend health..."
+            # Health checks
+            echo "Checking backend..."
             for i in {1..12}; do
-              status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2000/api/test || echo "000")
+              status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2000/api/test)
               if [ "$status" = "200" ]; then
-                echo "Backend is up!"
+                echo "Backend OK"
                 break
               fi
-              echo "Waiting for backend... ($i/12)"
               sleep 5
             done
 
-            echo "Checking frontend health..."
+            echo "Checking frontend..."
             for i in {1..12}; do
-              status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost || echo "000")
+              status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost)
               if [ "$status" = "200" ]; then
-                echo "Frontend is up!"
+                echo "Frontend OK"
                 break
               fi
-              echo "Waiting for frontend... ($i/12)"
               sleep 5
             done
 
