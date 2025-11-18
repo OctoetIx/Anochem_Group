@@ -20,11 +20,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 3. Set up Docker Buildx
+      # 3. Set up Docker Buildx (single builder for both images)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 4. Build and push Backend Docker Image
+      # 4. Build & push Backend image
       - name: Build & Push Backend Image
         run: |
           docker buildx build \
@@ -33,7 +33,7 @@ jobs:
             -f backend/Dockerfile ./backend \
             --push
 
-      # 5. Build and push Frontend Docker Image
+      # 5. Build & push Frontend image
       - name: Build & Push Frontend Image
         run: |
           docker buildx build \
