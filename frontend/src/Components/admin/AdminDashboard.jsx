@@ -60,10 +60,10 @@ const handleSubmitProduct = async (productData) => {
 
     let res;
     if (editProduct) {
-      res = await axiosInstance.put(`/admin/products/${editProduct._id}`, formData, {
+      res = await axiosInstance.put(`/admin/products/${editProduct.slug}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setProducts(products.map((p) => (p._id === editProduct._id ? res.data : p)));
+      setProducts(products.map((p) => (p.slug === editProduct.slug ? res.data : p)));
       setEditProduct(null);
     } else {
       res = await axiosInstance.post("/admin/products", formData, {
@@ -71,9 +71,6 @@ const handleSubmitProduct = async (productData) => {
       });
       setProducts([...products, res.data]);
     }
-
-    // Refetch products for category page if needed
-    fetchProducts();
 
     Swal.fire("Success", editProduct ? "Product updated!" : "Product uploaded!", "success");
     setActiveSection("view");
@@ -84,7 +81,7 @@ const handleSubmitProduct = async (productData) => {
 };
 
   // Delete product with SweetAlert2 confirmation
-  const handleDelete = async (id) => {
+  const handleDelete = async (slug) => {
     try {
       const result = await Swal.fire({
         title: "Are you sure?",
@@ -104,7 +101,7 @@ const handleSubmitProduct = async (productData) => {
           didOpen: () => Swal.showLoading(),
         });
 
-        await axiosInstance.delete(`/admin/products/${id}`);
+        await axiosInstance.delete(`/admin/products/${slug}`);
         fetchProducts();
 
         Swal.close();

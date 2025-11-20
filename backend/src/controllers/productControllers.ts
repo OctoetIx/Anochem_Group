@@ -5,34 +5,33 @@ import cloudinary from "../config/cloudinary";
 import { deleteImageFromCloudinary } from "../utils/cloudinaryHelper";
 import { getPagination } from "../utils/pagination";
 import { clearProductCaches } from "../middleware/cache";
-import mongoose from "mongoose";
 import createSlug from "../utils/slugHelper";
 
-// Get single product by ID
-export const getProductById = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: "Invalid product ID" });
+// ---------------- PUBLIC ----------------
 
+// Get single product by slug
+export const getProductBySlug = async (req: Request, res: Response) => {
+  const { slug } = req.params;
   try {
-    const product = await Product.findById(id);
+    const product = await Product.findOne({ slug });
     if (!product) return res.status(404).json({ error: "Product not found" });
     res.json(product);
   } catch (err) {
-    console.error("Error fetching product:", err);
+    console.error("Error fetching product by slug:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
 
-// Get related products
+// Get related products by slug
 export const getRelatedProducts = async (req: Request, res: Response) => {
+  const { slug } = req.params;
   try {
-    const { id } = req.params;
-    const currentProduct = await Product.findById(id);
+    const currentProduct = await Product.findOne({ slug });
     if (!currentProduct) return res.status(404).json({ error: "Product not found" });
 
     const related = await Product.find({
       categorySlug: currentProduct.categorySlug,
-      _id: { $ne: id },
+      slug: { $ne: slug }, // exclude current product
     })
       .limit(5)
       .sort({ createdAt: -1 });
@@ -61,7 +60,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
   });
 };
 
-// Get products by categorySlug
+// Get products by category slug
 export const getProductsByCategory = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
@@ -71,7 +70,6 @@ export const getProductsByCategory = async (req: Request, res: Response) => {
       .sort({ [sortField]: order })
       .skip(skip)
       .limit(limit);
-
     const total = await Product.countDocuments({ categorySlug: slug });
 
     res.json({
@@ -106,7 +104,7 @@ export const searchProducts = async (req: Request, res: Response) => {
   });
 };
 
-//////////////// ADMIN ///////////////////
+// ---------------- ADMIN ----------------
 
 // Create product
 export const createProduct = async (req: Request, res: Response) => {
@@ -117,10 +115,14 @@ export const createProduct = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Missing required fields or image" });
     }
 
-    // Upload image
+    // Upload image to Cloudinary
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: "products",
-      transformation: [{ width: 800, height: 800, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }],
+      transformation: [
+        { width: 800, height: 800, crop: "limit" },
+        { quality: "auto" },
+        { fetch_format: "auto" },
+      ],
     });
 
     if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
@@ -174,7 +176,11 @@ export const updateProduct = async (req: Request, res: Response) => {
 
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: "products",
-        transformation: [{ width: 800, height: 800, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }],
+        transformation: [
+          { width: 800, height: 800, crop: "limit" },
+          { quality: "auto" },
+          { fetch_format: "auto" },
+        ],
       });
 
       if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);

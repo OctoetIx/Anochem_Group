@@ -24,8 +24,8 @@ const CategoryPages = () => {
 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
   {filteredProducts.map(product => (
     <Link
-      to={`/products/${product._id}`}
-      key={product._id}
+      to={`/products/${product.slug}`}
+      key={product.slug}
       className="rounded-xl overflow-hidden shadow-md bg-white text-black hover:shadow-xl transition-shadow duration-300 block"
     >
       <img
