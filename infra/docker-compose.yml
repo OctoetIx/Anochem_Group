@@ -1,47 +1,38 @@
-services:
+version: "3.9"
 
-  nginx:
-    depends_on:
-     - frontend
-     - backend
-    restart: always
+services:
+  frontend:
     build:
-      context: ./infra/nginx
+      context: ../frontend
       dockerfile: Dockerfile
-      ports:
-      - "80:80" 
+    container_name: frontend
+    restart: always
+    ports:
+      - "80:80" # serve SPA on host port 80
+    depends_on:
+      - backend
+    networks:
+      - webnet
+
   backend:
     build:
+      context: ../backend
       dockerfile: Dockerfile
-      context: "./backend"
-    volumes:
-      - /app/node_modules
-      - ./backend:/app
+    container_name: backend
     restart: unless-stopped
-   
-    environment:
-      NODE_ENV: ${NODE_ENV}
-      PORT: 2000
-      MONGO_URI: ${MONGO_URI}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    expose:
+      - "2000"
+    networks:
+      - webnet
 
-  frontend:
-   
-    stdin_open: true
-    build:
-      dockerfile: Dockerfile 
-      context: ./frontend 
-    volumes:
-    - /app/node_modules
-    - ./frontend:/app
-      
-    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - webnet
 
-
+networks:
+  webnet:
+    driver: bridge
