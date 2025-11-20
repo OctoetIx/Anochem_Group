@@ -1,5 +1,5 @@
-# BUILD STAGE
-FROM node:22-alpine
+# ---- BUILD STAGE ----
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
@@ -9,13 +9,17 @@ COPY . .
 RUN npm run build
 
 
-# PRODUCTION STAGE 
-FROM node:22-alpine
+# ---- PRODUCTION STAGE ----
+FROM node:22-alpine AS production
 WORKDIR /app
 
-COPY ./package.json ./
-RUN npm install --omit=dev   
+# Only copy package.json and package-lock.json
+COPY package*.json ./
 
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Copy built JS files from builder stage
 COPY --from=builder /app/dist ./dist
 
 ENV NODE_ENV=production
