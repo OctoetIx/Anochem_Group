@@ -16,10 +16,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile
 
-    # <-- THIS LOADS YOUR backend/.env
-    env_file:
-      - ./backend/.env
-
     # You can still override or pass additional env here:
     environment:
       NODE_ENV: ${NODE_ENV}
