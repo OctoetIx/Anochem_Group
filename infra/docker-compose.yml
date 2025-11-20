@@ -1,17 +1,24 @@
-  GNU nano 7.2                                                          docker-compose.yml                                                                   
-version: "3.9"
-
 services:
-  backend:
-    # Use image if defined, otherwise build locally
-    image: "${DOCKERHUB_USER}/myapp-backend:${BACKEND_TAG:-latest}"
+
+  nginx:
+    depends_on:
+     - frontend
+     - backend
+    restart: always
     build:
-      context: ../backend
+      context: ./infra/nginx
       dockerfile: Dockerfile
-    container_name: backend
+      ports:
+      - "80:80" 
+  backend:
+    build:
+      dockerfile: Dockerfile
+      context: "./backend"
+    volumes:
+      - /app/node_modules
+      - ./backend:/app
     restart: unless-stopped
-    env_file:
-      - ./.env
+   
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: 2000
@@ -24,38 +31,17 @@ services:
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
-    expose:
-      - "2000"
-    depends_on:
-      - redis
-    networks:
-      - webnet
 
   frontend:
-    # Use image if defined, otherwise build locally
-    image: "${DOCKERHUB_USER}/myapp-frontend:${FRONTEND_TAG:-latest}"
+   
+    stdin_open: true
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
-    container_name: frontend
-    restart: unless-stopped
-    env_file:
-      - ./.env
-    expose:
-      - "80"
-    networks:
-      - webnet
-
-  nginx:
-    image: nginx:stable
-    container_name: nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
+      dockerfile: Dockerfile 
+      context: ./frontend 
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      # Mount frontend build only for development
-      - ${DEV_FRONTEND_BUILD_PATH:-../frontend/dist}:/usr/share/nginx/html:ro
-                                                                      [ Read 78 lines ]
-^G Help          ^O Write Out     ^W Where Is      ^K Cut           ^T Execute       ^C Location      M-U Undo         M-A Set Mark     M-] To Bracket
-^X Exit          ^R Read File     ^\ Replace       ^U Paste         ^J Justify       ^/ Go To Line    M-E Redo         M-6 Copy         ^Q Where Was
+    - /app/node_modules
+    - ./frontend:/app
+      
+    restart: unless-stopped
+
+
