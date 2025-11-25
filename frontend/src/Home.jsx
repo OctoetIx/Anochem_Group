@@ -129,7 +129,6 @@ const Home = () => {
         <h3 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-10 text-white">
           Our Products
         </h3>
-
         <div
           className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-8"
           onMouseEnter={() => setIsPaused(true)}
