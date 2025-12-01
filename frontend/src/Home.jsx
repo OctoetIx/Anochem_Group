@@ -7,6 +7,8 @@ import img2 from "./assets/img2.jpg";
 import img3 from "./assets/img3.jpg";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import ProductCard from "./Components/ProductCard";
+import axiosInstance from "./api/axiosInstance";
 
 const Home = () => {
   const ref = useRef(null);
@@ -44,6 +46,31 @@ const Home = () => {
 
   const productImages = [img1, img2, img3, img4];
   const duplicatedImages = [...productImages, ...productImages];
+
+
+const [products, setProducts] = useState([]);
+
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const res = await axiosInstance.get("/products");
+      const allProducts = res.data.items || [];
+
+      // Shuffle products randomly
+      const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
+
+      // Pick the first 8
+      const randomEight = shuffled.slice(0, 8);
+
+      setProducts(randomEight);
+    } catch (error) {
+      console.log("Error fetching products:", error);
+    }
+  };
+
+  fetchProducts();
+}, []);
+
 
   return (
     <>
@@ -123,6 +150,18 @@ const Home = () => {
           </motion.div>
         </motion.div>
       </section>
+
+      {/* PRODUCT CARD SECTION */}
+     <section className="px-4 sm:px-6 md:px-8 py-10">
+  <h2 className="text-2xl font-bold mb-6 text-center">Featured Products</h2>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {products.map((product) => (
+      <ProductCard key={product._id} product={product} />
+    ))}
+  </div>
+</section>
+
 
       {/* AUTO-SLIDING PRODUCT CAROUSEL */}
       <section className="bg-black py-10 sm:py-14 md:py-16 overflow-hidden">
