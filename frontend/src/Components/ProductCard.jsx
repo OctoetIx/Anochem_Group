@@ -12,7 +12,7 @@ const ProductCard = ({ product }) => {
         />
         <div className="p-3 flex flex-col gap-1">
           <h3 className="text-md font-semibold">{product.productName}</h3>
-          {/* <p className="text-gray-600 text-sm line-clamp-2">{product.description}</p> */}
+          <p className="text-gray-600 text-sm line-clamp-2">{product.description}</p>
         </div>
       </div>
     </Link>
