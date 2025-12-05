@@ -18,7 +18,14 @@ const Carousel = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-[80vh] overflow-hidden">
+    <div  className="
+        relative w-full 
+        h-[50vh] 
+        sm:h-[55vh]
+        md:h-[70vh]
+        lg:h-[80vh]
+        overflow-hidden
+      ">
       <AnimatePresence>
         <motion.img
           key={images[current]}
