@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
-import { ArrowLeft } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 
 const ProductDetails = () => {
-  const navigate = useNavigate();
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -12,10 +14,9 @@ const ProductDetails = () => {
   const [loadingRelated, setLoadingRelated] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch product by slug
+  // Fetch product
   useEffect(() => {
     if (!slug) return;
-
     const fetchProduct = async () => {
       setLoading(true);
       setError("");
@@ -23,101 +24,118 @@ const ProductDetails = () => {
         const res = await axiosInstance.get(`/products/${slug}`);
         setProduct(res.data);
       } catch (err) {
-        console.error("Error fetching product:", err);
+        console.error(err);
         setError("Failed to load product.");
-        setProduct(null);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [slug]);
 
   // Fetch related products
   useEffect(() => {
     if (!product?.slug) return;
-
     const fetchRelated = async () => {
       setLoadingRelated(true);
       try {
         const res = await axiosInstance.get(`/products/${product.slug}/related`);
         setRelated(res.data || []);
       } catch (err) {
-        console.error("Error fetching related products:", err);
+        console.error(err);
         setRelated([]);
       } finally {
         setLoadingRelated(false);
       }
     };
-
     fetchRelated();
   }, [product]);
 
-  if (loading) return <p className="pt-32 p-6 text-center">Loading product...</p>;
-  if (error) return <p className="pt-32 p-6 text-red-500 text-center">{error}</p>;
-  if (!product) return <p className="pt-32 p-6 text-center">Product not found</p>;
+  if (loading)
+    return <p className="h-screen flex items-center justify-center text-gray-600">Loading product...</p>;
+  if (error)
+    return <p className="h-screen flex items-center justify-center text-red-500">{error}</p>;
+  if (!product)
+    return <p className="h-screen flex items-center justify-center">Product not found</p>;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1 pt-32 px-6 max-w-4xl mx-auto mb-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 px-3 py-2 bg-black text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-black mb-6 cursor-pointer"
-        >
-          <ArrowLeft size={18} />
-          Back
-        </button>
+    <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center px-4 sm:px-6 md:px-12">
+      
+      {/* Main Product Card */}
+      <div className="flex flex-col items-center justify-center space-y-6 w-full max-w-3xl">
+        {product.images?.length > 0 && (
+          <Swiper
+            modules={[Pagination, Autoplay]}
+            pagination={{ clickable: true }}
+            autoplay={{ delay: 7000, disableOnInteraction: false }}
+            loop={true}
+            spaceBetween={20}
+            slidesPerView={1}
+            className="rounded-xl shadow-lg overflow-hidden mb-4 w-full max-w-md"
+          >
+            {product.images.map((img, idx) => (
+              <SwiperSlide key={idx} className="flex justify-center items-center">
+                <img
+                  src={img.url}
+                  alt={`${product.productName} ${idx + 1}`}
+                  loading="lazy"
+                  className="max-h-[250px] w-auto object-contain"
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
 
-        <div className="flex justify-center mb-6">
-          {product?.imageUrl && (
-            <img
-              src={product.imageUrl}
-              alt={product.productName}
-              loading="lazy"
-              className="object-contain max-h-[500px] w-full sm:w-3/4 lg:w-1/2 rounded-lg"
-            />
-          )}
-        </div>
+        <h1 className="text-3xl font-bold text-center">{product.productName}</h1>
+        <p className="text-gray-700 text-center max-w-sm">{product.description}</p>
 
-        <h1 className="text-2xl font-bold text-center">{product.productName}</h1>
-        <p className="text-gray-700 mt-4 text-center">{product.description}</p>
-
+        {/* Related Products Carousel directly below description */}
         {related.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold mb-4 text-center">Related Products</h2>
+          <div className="w-full mt-8">
+            <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
+              Related Products
+            </h2>
             {loadingRelated ? (
-              <p className="text-center">Loading related products...</p>
+              <p className="text-center text-gray-600">Loading related products...</p>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
+              <Swiper
+                modules={[Autoplay]}
+                spaceBetween={20}
+                slidesPerView={2}
+                autoplay={{ delay: 5000, disableOnInteraction: false }}
+                loop={true}
+                breakpoints={{
+                  640: { slidesPerView: 2 },
+                  768: { slidesPerView: 3 },
+                  1024: { slidesPerView: 4 },
+                }}
+                className="pb-6"
+              >
                 {related.map((p) => (
-                  <Link
-                    key={p.slug}
-                    to={`/products/${p.slug}`}
-                    className="border rounded-lg p-2 hover:shadow-lg transition w-full max-w-xs h-full flex flex-col"
-                  >
-                    <div className="flex justify-center items-center h-40 overflow-hidden">
-                      {p.imageUrl && (
-                        <img
-                          src={p.imageUrl}
-                          alt={p.productName}
-                          loading="lazy"
-                          className="object-contain w-full h-full rounded transform transition-transform duration-300 hover:scale-105"
-                        />
-                      )}
+                  <SwiperSlide key={p.slug} className="flex justify-center">
+                    <div className="border rounded-lg p-2 hover:shadow-xl transition-all w-full max-w-[180px] flex flex-col bg-white overflow-hidden">
+                      <div className="h-36 sm:h-44 flex justify-center items-center bg-gray-100 overflow-hidden">
+                        {p.images?.length > 0 ? (
+  <img
+    src={p.images[Math.min(p.coverImageIndex ?? 0, p.images.length - 1)]?.url}
+    alt={p.productName}
+    className="object-contain w-full h-full transform transition-transform duration-300 hover:scale-105"
+  />
+) : (
+  <div className="text-gray-400 text-sm">No Image</div>
+)}
+                      </div>
+                      <h3 className="mt-2 font-medium text-sm text-center text-gray-800 p-2 truncate">
+                        {p.productName}
+                      </h3>
                     </div>
-                    <h3 className="mt-2 font-semibold text-sm text-center flex-1 flex items-center justify-center">
-                      {p.productName}
-                    </h3>
-                  </Link>
+                  </SwiperSlide>
                 ))}
-              </div>
+              </Swiper>
             )}
           </div>
         )}
       </div>
-
-      <footer className="bg-gray-800 text-white py-4 text-center mt-auto"></footer>
     </div>
   );
 };

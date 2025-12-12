@@ -1,13 +1,12 @@
 import React, { useRef, useEffect, useState } from "react";
 import Carousel from "./Components/Carousel";
-import ContactForm from "./Components/ContactForm";
 import img4 from "./assets/img4.jpg";
 import img1 from "./assets/img1.jpg";
 import img2 from "./assets/img2.jpg";
 import img3 from "./assets/img3.jpg";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import ProductCard from "./Components/ProductCard";
+import FeaturedProductCard from "./Components/FeaturedProductCard";
 import axiosInstance from "./api/axiosInstance";
 
 const Home = () => {
@@ -99,17 +98,7 @@ useEffect(() => {
           relationships based on excellence, reliability, and results. Because
           when you choose Anochemical, you choose a legacy of beauty that lasts.
         </p>
-        <button
-          onClick={() => navigate("/products")}
-          className="bg-black cursor-pointer px-5 sm:px-6 py-3 sm:py-4 my-4 rounded-lg text-yellow-500 font-medium transition hover:bg-yellow-600 hover:text-black text-sm sm:text-base md:text-lg"
-        >
-          Our Products
-        </button>
-      </div>
-
-      {/* CONTACT FORM */}
-      <div className="px-4 sm:px-6 md:px-8">
-        <ContactForm />
+      
       </div>
 
       {/* ABOUT / FADE-IN SECTION */}
@@ -151,65 +140,64 @@ useEffect(() => {
         </motion.div>
       </section>
 
-      {/* PRODUCT CARD SECTION */}
-     <section className="px-4 sm:px-6 md:px-8 py-10">
-  <h2 className="text-2xl font-bold mb-6 text-center">Featured Products</h2>
+{/* AUTO-SLIDING PRODUCT CAROUSEL */}
+<section className="relative bg-gray-900 py-6 sm:py-8 overflow-hidden">
+  {/* Optional overlay for subtle effect */}
+  <div className="absolute inset-0 bg-black/20 pointer-events-none"></div>
 
-  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-  {products.map(product => (
-    <ProductCard key={product._id} product={product} />
-  ))}
-</div>
+  {/* Section Title */}
+  <h3 className="relative text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-6 text-yellow-500 z-10">
+    Our Products
+  </h3>
 
+  <div
+    className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-8 z-10"
+    onMouseEnter={() => setIsPaused(true)}
+    onMouseLeave={() => setIsPaused(false)}
+  >
+   <motion.div
+  className="flex gap-3 sm:gap-4"
+  animate={{ x: isPaused ? 0 : ["0%", "-50%"] }}
+  transition={{ ease: "linear", duration: 20, repeat: Infinity }}
+>
+  {products
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 10)
+    .map((product) => (
+      <div
+        key={product._id}
+        className="min-w-[180px] sm:min-w-[200px] md:min-w-[220px] rounded-xl overflow-hidden shadow-lg cursor-pointer bg-gray-800"
+        onClick={() => navigate(`/products/${product.slug}`)}
+      >
+        {/* Make image square */}
+        <div className="w-full aspect-square overflow-hidden">
+          <img
+            src={product.images?.[0]?.url || "/placeholder.png"}
+            alt={product.productName}
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+          />
+        </div>
+
+        <div className="p-2 text-center bg-gray-900">
+          <h4 className="text-sm sm:text-base font-medium truncate text-yellow-500">
+            {product.productName}
+          </h4>
+        </div>
+      </div>
+    ))}
+</motion.div>
+  </div>
+
+  {/* Explore Button */}
+  <div className="text-center mt-4 sm:mt-6 z-10 relative">
+    <button
+      onClick={() => navigate("/products")}
+      className="bg-yellow-500 text-black px-5 sm:px-7 py-2 sm:py-3 rounded-full text-base sm:text-lg hover:bg-yellow-400 hover:text-black cursor-pointer transition duration-300"
+    >
+      Explore Products
+    </button>
+  </div>
 </section>
-
-
-      {/* AUTO-SLIDING PRODUCT CAROUSEL */}
-      <section className="bg-black py-10 sm:py-14 md:py-16 overflow-hidden">
-        <h3 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-10 text-white">
-          Our Products
-        </h3>
-        <div
-          className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-8"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
-          <motion.div
-            className="flex gap-4 sm:gap-6"
-            animate={{
-              x: isPaused ? 0 : ["0%", "-50%"],
-            }}
-            transition={{
-              ease: "linear",
-              duration: 20,
-              repeat: Infinity,
-            }}
-          >
-            {duplicatedImages.map((image, index) => (
-              <div
-                key={index}
-                className="min-w-[200px] sm:min-w-[250px] md:min-w-[300px] rounded-xl overflow-hidden shadow-lg"
-              >
-                <img
-                  src={image}
-                  alt={`Product ${index + 1}`}
-                  className="w-full h-48 sm:h-56 md:h-64 object-cover hover:scale-110 transition-transform duration-500"
-                />
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* EXPLORE BUTTON */}
-        <div className="text-center mt-8 sm:mt-10">
-          <button
-            onClick={() => navigate("/products")}
-            className="bg-yellow-500 text-black px-6 sm:px-8 py-2 sm:py-3 rounded-full text-base sm:text-lg hover:bg-yellow-400 hover:text-black cursor-pointer transition duration-300"
-          >
-            Explore Products
-          </button>
-        </div>
-      </section>
     </>
   );
 };

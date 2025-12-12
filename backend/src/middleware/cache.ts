@@ -42,13 +42,26 @@ export const cache = (keyPrefix: string, ttl = CACHE_TTL.DEFAULT) => {
     }
   };
 };
-
-export const clearProductCaches = async (category?: string) => {
+export const clearProductCaches = async (categorySlug?: string) => {
   try {
-    await redis.del("products");
-    if (category) await redis.del(`category:${category}`);
+    // ALWAYS clear general product lists
+    const productKeys = await redis.keys("products:*");
+    if (productKeys.length > 0) await redis.del(productKeys);
+
+    // Conditionally clear category-specific keys
+    if (categorySlug) {
+      const categoryKeys = await redis.keys(`category:${categorySlug}*`);
+      if (categoryKeys.length > 0) await redis.del(categoryKeys);
+    } else {
+      // fallback: clear ALL category keys
+      const categoryKeys = await redis.keys("category:*");
+      if (categoryKeys.length > 0) await redis.del(categoryKeys);
+    }
+
     const searchKeys = await redis.keys("search:*");
-    if (searchKeys.length) await redis.del(searchKeys);
+    if (searchKeys.length > 0) await redis.del(searchKeys);
+
+    console.log("Redis cache cleared successfully.");
   } catch (err) {
     console.error("Failed to clear product caches:", err);
   }

@@ -5,7 +5,8 @@ import cloudinary from "../config/cloudinary";
 import { deleteImageFromCloudinary } from "../utils/cloudinaryHelper";
 import { getPagination } from "../utils/pagination";
 import { clearProductCaches } from "../middleware/cache";
-import createSlug from "../utils/slugHelper";
+import sanitizeSlug from "../utils/slugHelper";
+import generateUniqueSlug from "../utils/slugGenerator";
 
 // ---------------- PUBLIC ----------------
 
@@ -22,7 +23,7 @@ export const getProductBySlug = async (req: Request, res: Response) => {
   }
 };
 
-// Get related products by slug
+// Get related products
 export const getRelatedProducts = async (req: Request, res: Response) => {
   const { slug } = req.params;
   try {
@@ -31,7 +32,7 @@ export const getRelatedProducts = async (req: Request, res: Response) => {
 
     const related = await Product.find({
       categorySlug: currentProduct.categorySlug,
-      slug: { $ne: slug }, // exclude current product
+      slug: { $ne: slug },
     })
       .limit(5)
       .sort({ createdAt: -1 });
@@ -43,13 +44,14 @@ export const getRelatedProducts = async (req: Request, res: Response) => {
   }
 };
 
-// Get all products (paginated)
+// Paginated list
 export const getAllProducts = async (req: Request, res: Response) => {
   const { page, limit, skip, sortField, order } = getPagination(req);
   const products = await Product.find()
     .sort({ [sortField]: order })
     .skip(skip)
     .limit(limit);
+
   const total = await Product.countDocuments();
 
   res.json({
@@ -60,7 +62,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
   });
 };
 
-// Get products by category slug
+// Get products by category
 export const getProductsByCategory = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
@@ -70,6 +72,7 @@ export const getProductsByCategory = async (req: Request, res: Response) => {
       .sort({ [sortField]: order })
       .skip(skip)
       .limit(limit);
+
     const total = await Product.countDocuments({ categorySlug: slug });
 
     res.json({
@@ -84,7 +87,7 @@ export const getProductsByCategory = async (req: Request, res: Response) => {
   }
 };
 
-// Search products by name
+// Search products
 export const searchProducts = async (req: Request, res: Response) => {
   const { term } = req.params;
   const regex = new RegExp(term, "i");
@@ -94,6 +97,7 @@ export const searchProducts = async (req: Request, res: Response) => {
     .sort({ [sortField]: order })
     .skip(skip)
     .limit(limit);
+
   const total = await Product.countDocuments({ productName: regex });
 
   res.json({
@@ -105,116 +109,179 @@ export const searchProducts = async (req: Request, res: Response) => {
 };
 
 // ---------------- ADMIN ----------------
-
 // Create product
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { productName, category, description } = req.body;
-    if (!productName || !category || !description || !req.file?.path) {
-      if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-      return res.status(400).json({ error: "Missing required fields or image" });
+    const { productName, category, description, coverImageIndex } = req.body;
+
+    if (!productName || !category || !description) {
+      return res.status(400).json({ error: "Missing required fields." });
     }
 
-    // Upload image to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "products",
-      transformation: [
-        { width: 800, height: 800, crop: "limit" },
-        { quality: "auto" },
-        { fetch_format: "auto" },
-      ],
-    });
+    const slugBase = sanitizeSlug(productName);
+    let slug = slugBase;
+    let attempt = 1;
 
-    if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    while (await Product.exists({ slug })) {
+      slug = `${slugBase}-${attempt++}`;
+    }
 
-    const slug = createSlug(productName);
-    const categorySlug = createSlug(category);
+    const images: any[] = [];
+
+    // Upload new images
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files as Express.Multer.File[]) {
+        const uploaded = await cloudinary.uploader.upload(file.path);
+        images.push({
+          url: uploaded.secure_url,
+          cloudinaryId: uploaded.public_id,
+        });
+      }
+    }
 
     const product = await Product.create({
       productName,
       category,
-      categorySlug,
-      slug,
       description,
-      imageUrl: result.secure_url,
-      cloudinaryId: result.public_id,
+      slug,
+      categorySlug: sanitizeSlug(category),
+      images,
+      coverImageIndex: images.length ? Math.min(Number(coverImageIndex) || 0, images.length - 1) : undefined,
     });
 
-    await clearProductCaches(categorySlug);
-
-    res.status(201).json(product);
+    return res.status(201).json({ product });
   } catch (err) {
-    console.error("Error creating product:", err);
-    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    res.status(500).json({ error: "Upload failed" });
+    console.error("CREATE PRODUCT ERROR:", err);
+    return res.status(500).json({ error: "Server error." });
   }
 };
 
-// Update product
+
+
+// ===============================
+//  UPDATE PRODUCT
+// ===============================
 export const updateProduct = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const product = await Product.findById(id);
-    if (!product) return res.status(404).json({ error: "Product not found" });
-
+    const { slug } = req.params;
     const { productName, category, description } = req.body;
 
-    if (productName) {
-      product.productName = productName;
-      product.slug = createSlug(productName);
+    let existingImages: string[] = [];
+    if (req.body.existingImages) {
+      try {
+        existingImages = JSON.parse(req.body.existingImages);
+      } catch {
+        return res.status(400).json({ error: "Invalid existingImages JSON." });
+      }
     }
 
+    const newCoverIndex = Number(req.body.coverImageIndex ?? 0);
+
+    const product = await Product.findOne({ slug });
+    if (!product) return res.status(404).json({ error: "Product not found." });
+
+    // Update fields
+    if (productName) product.productName = productName;
     if (category) {
       product.category = category;
-      product.categorySlug = createSlug(category);
+      product.categorySlug = sanitizeSlug(category);
     }
-
     if (description) product.description = description;
 
-    if (req.file?.path) {
-      if (product.cloudinaryId) await deleteImageFromCloudinary(product.cloudinaryId);
+    // ------------------------------------
+    // HANDLE IMAGE ORDER, REMOVAL, UPLOAD
+    // ------------------------------------
+    const retained = product.images.filter((img) =>
+      existingImages.includes(img.url)
+    );
 
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "products",
-        transformation: [
-          { width: 800, height: 800, crop: "limit" },
-          { quality: "auto" },
-          { fetch_format: "auto" },
-        ],
-      });
+    const removed = product.images.filter(
+      (img) => !existingImages.includes(img.url)
+    );
 
-      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    // Delete removed images from Cloudinary
+    for (const r of removed) {
+      try {
+        await cloudinary.uploader.destroy(r.cloudinaryId);
+      } catch (err) {
+        console.error("Cloudinary deletion error:", err);
+      }
+    }
 
-      product.imageUrl = result.secure_url;
-      product.cloudinaryId = result.public_id;
+    // Upload new images
+    const newUploads: any[] = [];
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files as Express.Multer.File[]) {
+        const uploaded = await cloudinary.uploader.upload(file.path);
+        newUploads.push({
+          url: uploaded.secure_url,
+          cloudinaryId: uploaded.public_id,
+        });
+      }
+    }
+
+    // Final reordered array
+    const finalImages = [
+      ...existingImages
+        .map((url) => retained.find((i) => i.url === url))
+        .filter(Boolean),
+      ...newUploads,
+    ];
+
+    product.images = finalImages;
+
+    // Fix cover index
+    if (finalImages.length === 0) {
+      product.coverImageIndex = undefined;
+    } else {
+      product.coverImageIndex = Math.min(newCoverIndex, finalImages.length - 1);
+    }
+
+    // Update slug if name changed
+    if (productName) {
+      const base = sanitizeSlug(productName);
+      let newSlug = base;
+      let attempt = 1;
+      while (await Product.exists({ slug: newSlug, _id: { $ne: product._id } })) {
+        newSlug = `${base}-${attempt++}`;
+      }
+      product.slug = newSlug;
     }
 
     await product.save();
-    await clearProductCaches(product.categorySlug);
 
-    res.json(product);
+    return res.json({ product });
   } catch (err) {
-    console.error("Error updating product:", err);
-    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    res.status(500).json({ error: "Update failed" });
+    console.error("UPDATE PRODUCT ERROR:", err);
+    return res.status(500).json({ error: "Server error." });
   }
 };
 
-// Delete product
+
+
+// ===============================
+//  DELETE PRODUCT
+// ===============================
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const product = await Product.findById(id);
-    if (!product) return res.status(404).json({ error: "Product not found" });
+    const { slug } = req.params;
+    const product = await Product.findOne({ slug });
 
-    if (product.cloudinaryId) await deleteImageFromCloudinary(product.cloudinaryId);
+    if (!product) return res.status(404).json({ error: "Not found" });
+
+    // delete images from cloudinary
+    for (const img of product.images) {
+      try {
+        await cloudinary.uploader.destroy(img.cloudinaryId);
+      } catch (err) {
+        console.error("Cloudinary delete error:", err);
+      }
+    }
 
     await product.deleteOne();
-    await clearProductCaches(product.categorySlug);
-
-    res.json({ message: "Product deleted successfully" });
+    return res.json({ success: true });
   } catch (err) {
-    console.error("Error deleting product:", err);
-    res.status(500).json({ error: "Delete failed" });
+    console.error("DELETE PRODUCT ERROR:", err);
+    return res.status(500).json({ error: "Server error." });
   }
 };

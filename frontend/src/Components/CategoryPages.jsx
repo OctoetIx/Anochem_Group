@@ -7,10 +7,8 @@ const CategoryPages = () => {
   const { slug } = useParams();
   const { products, loading } = useContext(ProductContext);
 
-  // Filter products by categorySlug
   const filteredProducts = products.filter((p) => p.categorySlug === slug);
 
-  // Convert slug to readable title
   const categoryTitle = slug
     ? slug
         .split("-")
@@ -18,33 +16,46 @@ const CategoryPages = () => {
         .join(" ")
     : "Products";
 
-  if (loading) return <p className="text-center mt-8">Loading products...</p>;
+  if (loading)
+    return <p className="text-center mt-8 text-gray-500">Loading products...</p>;
+
   if (!slug || filteredProducts.length === 0)
-    return (
-      <p className="text-center my-80">No products found in this category</p>
-    );
+    return <p className="text-center my-80 text-gray-500">No products found in this category</p>;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-32">
-      <h1 className="text-3xl font-bold text-yellow-500 mb-6">{categoryTitle}</h1>
+    <div className="max-w-7xl mx-auto px-6 py-20">
+      {/* Category Title */}
+      <h1 className="text-3xl sm:text-4xl font-extrabold text-yellow-500 mb-10 text-center tracking-wide">
+        {categoryTitle}
+      </h1>
 
+      {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredProducts.map((product) => (
           <motion.div
             key={product.slug}
-            whileHover={{ scale: 1.05, y: -5 }}
-            transition={{ type: "spring", stiffness: 200, damping: 10 }}
-            className="rounded-xl overflow-hidden shadow-md bg-white text-black hover:shadow-xl transition-shadow duration-300"
+            whileHover={{ scale: 1.03, y: -2 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            className="bg-white rounded-2xl shadow-md hover:shadow-xl overflow-hidden flex flex-col cursor-pointer transition-all duration-300"
           >
             <Link to={`/products/${product.slug}`} className="block">
-              <img
-                src={product.imageUrl}
-                alt={product.productName}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h2 className="font-semibold text-lg">{product.productName}</h2>
-                <p className="text-sm mt-2">{product.description}</p>
+              {/* Image */}
+              <div className="overflow-hidden rounded-t-2xl h-36 sm:h-40">
+                <img
+                  src={product.images?.[0]?.url || product.imageUrl || "/placeholder.png"}
+                  alt={product.productName}
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+
+              {/* Content */}
+              <div className="p-4 flex flex-col gap-1">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                  {product.productName}
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">
+                  {product.description}
+                </p>
               </div>
             </Link>
           </motion.div>

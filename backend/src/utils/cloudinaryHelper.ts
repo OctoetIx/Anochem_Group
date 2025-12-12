@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from "cloudinary";
+import cloudinary from "../config/cloudinary";
 
 
 export const deleteImageFromCloudinary = async (publicId: string): Promise<void> => {

@@ -3,29 +3,31 @@ import React, { useState, useMemo } from "react";
 const ViewProducts = ({ products, onDelete, onEdit }) => {
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // Memoize unique categories
+  // Get unique categories
   const categories = useMemo(() => {
-    if (!products || products.length === 0) return ["All"];
-    const dynamicCategories = [...new Set(products.map((p) => p.category))];
-    return ["All", ...dynamicCategories];
+    if (!products?.length) return ["All"];
+    return ["All", ...new Set(products.map((p) => p.category))];
   }, [products]);
 
-  // Memoize filtered products
+  // Filter products based on selected category
   const filteredProducts = useMemo(() => {
-    if (!products) return [];
     return selectedCategory === "All"
       ? products
       : products.filter((p) => p.category === selectedCategory);
   }, [products, selectedCategory]);
 
   return (
-    <div>
-      {/* CATEGORY DROPDOWN */}
-      <div className="max-w-xs mb-6">
+    <div className="space-y-3">
+      {/* CATEGORY SELECT */}
+      <div className="max-w-xs">
+        <label className="block text-xs font-medium text-gray-700 mb-1">
+          Category
+        </label>
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="w-full p-2 border rounded-md shadow-sm bg-white"
+          className="w-full px-2 py-1 border rounded-md shadow-sm bg-white text-xs
+          focus:outline-none focus:ring-1 focus:ring-blue-400 transition"
         >
           {categories.map((cat) => (
             <option key={cat} value={cat}>
@@ -35,41 +37,60 @@ const ViewProducts = ({ products, onDelete, onEdit }) => {
         </select>
       </div>
 
-      {/* WHEN NO PRODUCTS MATCH THE FILTER */}
+      {/* EMPTY STATE */}
       {filteredProducts.length === 0 ? (
-        <p className="text-gray-500 mt-10 text-lg">No products found in this category.</p>
+        <p className="text-center text-gray-500 text-sm py-8">
+          No products found.
+        </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
           {filteredProducts.map((product) => (
             <div
               key={product.slug}
-              className="bg-white rounded-lg shadow p-4 flex flex-col justify-between"
+              className="bg-white rounded-md shadow-sm hover:shadow-md transition border border-gray-200
+              flex flex-col p-1 aspect-square"
             >
-              {product.imageUrl && (
-                <img
-                  src={product.imageUrl}
-                  alt={product.productName}
-                  className="h-40 w-full object-cover rounded-md"
-                />
-              )}
+              {/* IMAGE — show first image only */}
+          {product.images?.length > 0 ? (
+  <img
+    src={
+      product.images[
+        Math.min(product.coverImageIndex ?? 0, product.images.length - 1)
+      ]?.url
+    }
+    alt={product.productName}
+    className="w-full h-full object-cover rounded-md"
+  />
+) : (
+  <div className="w-full h-full bg-gray-100 rounded-md flex items-center justify-center text-gray-400 text-xs">
+    No Image
+  </div>
+)}
 
-              <div className="mt-3">
-                <h3 className="text-lg font-semibold">{product.productName}</h3>
-                <p className="text-sm text-gray-500 mt-1">Category: {product.category}</p>
+              {/* INFO */}
+              <div className="mt-1">
+                <h3 className="text-[10px] font-semibold text-gray-800 truncate leading-tight">
+                  {product.productName}
+                </h3>
+                <p className="text-[9px] text-gray-500 truncate leading-tight">
+                  {product.category}
+                </p>
               </div>
 
-              <div className="flex justify-between mt-4">
+              {/* BUTTONS */}
+              <div className="flex justify-between mt-1">
                 <button
                   onClick={() => onEdit(product)}
-                  className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
+                  className="px-1 py-[1px] bg-blue-500 text-white rounded text-[8px] hover:bg-blue-600 transition"
                 >
                   Edit
                 </button>
+
                 <button
                   onClick={() => onDelete(product.slug)}
-                  className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
+                  className="px-1 py-[1px] bg-red-500 text-white rounded text-[8px] hover:bg-red-600 transition"
                 >
-                  Delete
+                  Del
                 </button>
               </div>
             </div>
