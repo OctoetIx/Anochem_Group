@@ -2,66 +2,102 @@ import { Request, Response, NextFunction } from "express";
 import redis from "../config/redis";
 
 export const CACHE_TTL = {
-  DEFAULT: 3600,
-  SHORT: 300,
-  LONG: 86400,
+  DEFAULT: 3600,  // 1 hour
+  SHORT: 300,     // 5 minutes
+  LONG: 86400,    // 24 hours
 };
 
-export const cache = (keyPrefix: string, ttl = CACHE_TTL.DEFAULT) => {
+/**
+ * Build a stable Redis cache key:
+ * - Prefix
+ * - Sorted route params
+ * - Sorted query params
+ * - Fully deterministic and collision-safe
+ */
+export const buildCacheKey = (prefix: string, req: Request): string => {
+  const parts: string[] = [prefix];
+
+  // Route params
+  const params = req.params ?? {};
+  const paramEntries = Object.entries(params).sort(([a], [b]) => a.localeCompare(b));
+  for (const [k, v] of paramEntries) {
+    parts.push(`param:${k}=${v}`);
+  }
+
+  // Query params
+  const query = req.query ?? {};
+  const queryEntries = Object.entries(query).sort(([a], [b]) => a.localeCompare(b));
+
+  if (queryEntries.length > 0) {
+    const queryString = queryEntries
+      .map(([k, v]) => `q:${k}=${v}`)
+      .join("&");
+
+    parts.push(`query?${queryString}`);
+  }
+
+  return parts.join("|");
+};
+
+/**
+ * Generic caching middleware with auto-response wrapping
+ */
+export const cache = (keyPrefix: string, ttl: number = CACHE_TTL.DEFAULT) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      let key = keyPrefix;
+      const key = buildCacheKey(keyPrefix, req);
 
-      if (req.params.category) key += `:${req.params.category}`;
-      if (req.params.term) key += `:${req.params.term}`;
-      if (req.query.page) key += `:${req.query.page}`;
-      if (req.query.limit) key += `:${req.query.limit}`;
-      if (req.query.sort) key += `:${req.query.sort}`;
-      if (req.query.order) key += `:${req.query.order}`;
-
-      const cachedData = await redis.get(key);
-      if (cachedData) {
-        console.log(`[REDIS CACHE HIT] Key: ${key}`); // log hit
-        return res.json(JSON.parse(cachedData));
-      } else {
-        console.log(`[REDIS CACHE MISS] Key: ${key}`); // log miss
+      const cached = await redis.get(key);
+      if (cached) {
+        console.log(`[REDIS CACHE HIT] ${key}`);
+        return res.json(JSON.parse(cached));
       }
 
+      console.log(`[REDIS CACHE MISS] ${key}`);
+
       const originalJson = res.json.bind(res);
+
       res.json = (body: any) => {
         redis
           .setEx(key, ttl, JSON.stringify(body))
           .catch((err) => console.error("Redis caching failed:", err));
+
         return originalJson(body);
       };
 
       next();
     } catch (err) {
-      console.error("Redis cache middleware error:", err);
+      console.error("Cache middleware error:", err);
       next();
     }
   };
 };
+
+/**
+ * Clear product-related caches:
+ * - All product list keys (`products*`)
+ * - All search keys
+ * - Category-specific or ALL category keys
+ */
 export const clearProductCaches = async (categorySlug?: string) => {
   try {
-    // ALWAYS clear general product lists
-    const productKeys = await redis.keys("products:*");
-    if (productKeys.length > 0) await redis.del(productKeys);
+    const keys: string[] = [];
 
-    // Conditionally clear category-specific keys
-    if (categorySlug) {
-      const categoryKeys = await redis.keys(`category:${categorySlug}*`);
-      if (categoryKeys.length > 0) await redis.del(categoryKeys);
+    const productKeys = await redis.keys("products*");
+    const searchKeys = await redis.keys("search*");
+    const categoryPattern = categorySlug
+      ? `category:${categorySlug}*`
+      : "category:*";
+    const categoryKeys = await redis.keys(categoryPattern);
+
+    keys.push(...productKeys, ...searchKeys, ...categoryKeys);
+
+    if (keys.length > 0) {
+      await redis.del(keys);
+      console.log(`Cleared ${keys.length} cache entries.`);
     } else {
-      // fallback: clear ALL category keys
-      const categoryKeys = await redis.keys("category:*");
-      if (categoryKeys.length > 0) await redis.del(categoryKeys);
+      console.log("No caches to clear.");
     }
-
-    const searchKeys = await redis.keys("search:*");
-    if (searchKeys.length > 0) await redis.del(searchKeys);
-
-    console.log("Redis cache cleared successfully.");
   } catch (err) {
     console.error("Failed to clear product caches:", err);
   }

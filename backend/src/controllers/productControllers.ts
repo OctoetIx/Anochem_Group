@@ -148,6 +148,7 @@ export const createProduct = async (req: Request, res: Response) => {
       images,
       coverImageIndex: images.length ? Math.min(Number(coverImageIndex) || 0, images.length - 1) : undefined,
     });
+      await clearProductCaches(product.categorySlug);
 
     return res.status(201).json({ product });
   } catch (err) {
@@ -250,6 +251,8 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     await product.save();
 
+    await clearProductCaches(product.categorySlug);
+
     return res.json({ product });
   } catch (err) {
     console.error("UPDATE PRODUCT ERROR:", err);
@@ -279,6 +282,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
     }
 
     await product.deleteOne();
+    await clearProductCaches(product.categorySlug);
     return res.json({ success: true });
   } catch (err) {
     console.error("DELETE PRODUCT ERROR:", err);
