@@ -17,10 +17,16 @@ const CategoryPages = () => {
     : "Products";
 
   if (loading)
-    return <p className="text-center mt-8 text-gray-500">Loading products...</p>;
+    return (
+      <p className="text-center mt-8 text-gray-500">Loading products...</p>
+    );
 
   if (!slug || filteredProducts.length === 0)
-    return <p className="text-center my-80 text-gray-500">No products found in this category</p>;
+    return (
+      <p className="text-center my-80 text-gray-500">
+        No products found in this category
+      </p>
+    );
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-20">
@@ -42,8 +48,11 @@ const CategoryPages = () => {
               {/* Image */}
               <div className="overflow-hidden rounded-t-2xl h-36 sm:h-40">
                 <img
-                  src={product.images?.[0]?.url || product.imageUrl || "/placeholder.png"}
-                  alt={product.productName}
+                  src={
+                    product.images?.[product.coverImageIndex ?? 0]?.url ||
+                    product.images?.[0]?.url ||
+                    "/placeholder.png"
+                  }
                   className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                 />
               </div>
