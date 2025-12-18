@@ -74,7 +74,7 @@ useEffect(() => {
   return (
     <>
       {/* HERO CAROUSEL */}
-      <div className="pt-[85px]">
+      <div className="mt-20 relative w-full h-[80vh] md:h-[90vh] lg:h-[95vh] overflow-hidden">
         <Carousel />
       </div>
 
