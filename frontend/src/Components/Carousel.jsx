@@ -135,7 +135,7 @@ const Carousel = () => {
                 bg-yellow-500 text-black
                 px-7 py-3 rounded-full
                 font-semibold text-sm sm:text-base
-                transition-all duration-300
+                transition-all duration-300 cursor-pointer
               "
             >
               Explore Products
@@ -150,7 +150,7 @@ const Carousel = () => {
           <button
             key={i}
             onClick={() => setIndex([i, i > index ? 1 : -1])}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={`w-3 h-3 rounded-full transition-all duration-300 cursor-pointer ${
               i === index
                 ? "bg-yellow-500 scale-125"
                 : "bg-white/60 hover:bg-white"

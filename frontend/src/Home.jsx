@@ -138,7 +138,7 @@ useEffect(() => {
 
       <button
         onClick={() => navigate("/products")}
-        className="mt-8 inline-flex items-center gap-2 bg-black text-yellow-500 px-6 py-3 rounded-full font-medium text-sm sm:text-base hover:bg-yellow-500 hover:text-black transition-all duration-300 shadow-md"
+        className="mt-8 cursor-pointer inline-flex items-center gap-2 bg-black text-yellow-500 px-6 py-3 rounded-full font-medium text-sm sm:text-base hover:bg-yellow-500 hover:text-black transition-all duration-300 shadow-md"
       >
         Explore Our Products
       </button>
