@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import img1 from "../assets/img1.jpg";
@@ -32,8 +32,6 @@ const swipePower = (offset, velocity) => Math.abs(offset) * velocity;
 const Carousel = () => {
   const navigate = useNavigate();
   const [[index, direction], setIndex] = useState([0, 0]);
-  const [paused, setPaused] = useState(false);
-  const timeoutRef = useRef(null);
 
   const paginate = (dir) => {
     setIndex(([prev]) => [
@@ -42,13 +40,11 @@ const Carousel = () => {
     ]);
   };
 
-  // Auto slide
+  // Auto slide every 5 seconds (no pause on hover)
   useEffect(() => {
-    if (paused) return;
-
-    timeoutRef.current = setTimeout(() => paginate(1), 5000);
-    return () => clearTimeout(timeoutRef.current);
-  }, [index, paused]);
+    const timeout = setTimeout(() => paginate(1), 5000);
+    return () => clearTimeout(timeout);
+  }, [index]);
 
   return (
     <div
@@ -60,8 +56,6 @@ const Carousel = () => {
         lg:h-[85vh]
         overflow-hidden
       "
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
     >
       {/* SLIDES */}
       <AnimatePresence initial={false} custom={direction}>
@@ -70,25 +64,14 @@ const Carousel = () => {
           src={slides[index].image}
           custom={direction}
           variants={{
-            enter: (dir) => ({
-              x: dir > 0 ? 120 : -120,
-              opacity: 0,
-              scale: 1.05,
-            }),
+            enter: (dir) => ({ x: dir > 0 ? 120 : -120, opacity: 0, scale: 1.05 }),
             center: { x: 0, opacity: 1, scale: 1 },
-            exit: (dir) => ({
-              x: dir < 0 ? 120 : -120,
-              opacity: 0,
-              scale: 1.02,
-            }),
+            exit: (dir) => ({ x: dir < 0 ? 120 : -120, opacity: 0, scale: 1.02 }),
           }}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{
-            x: { type: "spring", stiffness: 260, damping: 30 },
-            opacity: { duration: 0.8 },
-          }}
+          transition={{ x: { type: "spring", stiffness: 260, damping: 30 }, opacity: { duration: 0.8 } }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={1}
@@ -124,10 +107,7 @@ const Carousel = () => {
             </p>
 
             <motion.button
-              whileHover={{
-                scale: 1.05,
-                boxShadow: "0 0 25px rgba(234,179,8,0.7)",
-              }}
+              whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(234,179,8,0.7)" }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/products")}
               className="
@@ -151,9 +131,7 @@ const Carousel = () => {
             key={i}
             onClick={() => setIndex([i, i > index ? 1 : -1])}
             className={`w-3 h-3 rounded-full transition-all duration-300 cursor-pointer ${
-              i === index
-                ? "bg-yellow-500 scale-125"
-                : "bg-white/60 hover:bg-white"
+              i === index ? "bg-yellow-500 scale-125" : "bg-white/60 hover:bg-white"
             }`}
           />
         ))}
