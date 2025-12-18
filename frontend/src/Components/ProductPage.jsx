@@ -45,7 +45,7 @@ const ProductPage = () => {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-5 py-2 rounded-full font-medium transition-colors duration-300
+            className={`px-5 py-2 rounded-full font-medium transition-colors duration-300 cursor-pointer
               ${selectedCategory === cat
                 ? "bg-yellow-500 text-white shadow-lg"
                 : "bg-gray-200 text-gray-700 hover:bg-yellow-200 hover:text-yellow-600"

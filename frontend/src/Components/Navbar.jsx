@@ -106,7 +106,7 @@ const Navbar = () => {
             About Us
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             to="/inquiry"
             className={({ isActive }) =>
               isActive
@@ -115,7 +115,7 @@ const Navbar = () => {
             }
           >
             Inquiry
-          </NavLink>
+          </NavLink> */}
 
           <NavLink
             to="/contact"
@@ -181,13 +181,13 @@ const Navbar = () => {
             About Us
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             to="/inquiry"
             onClick={toggleMenu}
             className="block text-white hover:text-yellow-500"
           >
             Inquiry
-          </NavLink>
+          </NavLink> */}
 
           <NavLink
             to="/contact"

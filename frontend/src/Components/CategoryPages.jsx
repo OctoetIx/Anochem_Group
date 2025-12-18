@@ -29,7 +29,7 @@ const CategoryPages = () => {
     );
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-20">
+    <div className="max-w-7xl mx-auto px-6 py-30">
       {/* Category Title */}
       <h1 className="text-3xl sm:text-4xl font-extrabold text-yellow-500 mb-10 text-center tracking-wide">
         {categoryTitle}
@@ -46,7 +46,7 @@ const CategoryPages = () => {
           >
             <Link to={`/products/${product.slug}`} className="block">
               {/* Image */}
-              <div className="overflow-hidden rounded-t-2xl h-36 sm:h-40">
+              <div className="overflow-hidden rounded-t-2xl h-40 sm:h-44">
                 <img
                   src={
                     product.images?.[product.coverImageIndex ?? 0]?.url ||
