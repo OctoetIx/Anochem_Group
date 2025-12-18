@@ -34,10 +34,7 @@ const Carousel = () => {
   const [[index, direction], setIndex] = useState([0, 0]);
 
   const paginate = (dir) => {
-    setIndex(([prev]) => [
-      (prev + dir + slides.length) % slides.length,
-      dir,
-    ]);
+    setIndex(([prev]) => [(prev + dir + slides.length) % slides.length, dir]);
   };
 
   // Auto slide every 5 seconds (no pause on hover)
@@ -47,16 +44,17 @@ const Carousel = () => {
   }, [index]);
 
   return (
-    <div
-      className="
-        relative w-full
-        h-[45vh]
-        sm:h-[55vh]
-        md:h-[70vh]
-        lg:h-[85vh]
-        overflow-hidden
-      "
-    >
+   <div
+  className="
+    relative w-full
+    h-[80vh]       // taller on small screens
+    sm:h-[70vh]
+    md:h-[70vh]
+    lg:h-[85vh]
+    overflow-hidden
+  "
+>
+
       {/* SLIDES */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.img
@@ -64,14 +62,25 @@ const Carousel = () => {
           src={slides[index].image}
           custom={direction}
           variants={{
-            enter: (dir) => ({ x: dir > 0 ? 120 : -120, opacity: 0, scale: 1.05 }),
+            enter: (dir) => ({
+              x: dir > 0 ? 120 : -120,
+              opacity: 0,
+              scale: 1.05,
+            }),
             center: { x: 0, opacity: 1, scale: 1 },
-            exit: (dir) => ({ x: dir < 0 ? 120 : -120, opacity: 0, scale: 1.02 }),
+            exit: (dir) => ({
+              x: dir < 0 ? 120 : -120,
+              opacity: 0,
+              scale: 1.02,
+            }),
           }}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ x: { type: "spring", stiffness: 260, damping: 30 }, opacity: { duration: 0.8 } }}
+          transition={{
+            x: { type: "spring", stiffness: 260, damping: 30 },
+            opacity: { duration: 0.8 },
+          }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={1}
@@ -107,7 +116,10 @@ const Carousel = () => {
             </p>
 
             <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(234,179,8,0.7)" }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0 0 25px rgba(234,179,8,0.7)",
+              }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/products")}
               className="
@@ -131,7 +143,9 @@ const Carousel = () => {
             key={i}
             onClick={() => setIndex([i, i > index ? 1 : -1])}
             className={`w-3 h-3 rounded-full transition-all duration-300 cursor-pointer ${
-              i === index ? "bg-yellow-500 scale-125" : "bg-white/60 hover:bg-white"
+              i === index
+                ? "bg-yellow-500 scale-125"
+                : "bg-white/60 hover:bg-white"
             }`}
           />
         ))}

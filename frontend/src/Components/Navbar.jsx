@@ -12,8 +12,8 @@ const categories = [
 ];
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false); // mobile menu
-  const [dropdownOpen, setDropdownOpen] = useState(false); // desktop dropdown
+  const [isOpen, setIsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const closeTimeoutRef = useRef(null);
   const location = useLocation();
 
@@ -28,19 +28,16 @@ const Navbar = () => {
     }, 200);
   };
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => setIsOpen((prev) => !prev);
 
   const handleDropdownLinkClick = () => setDropdownOpen(false);
 
-  // FIXED: correct active check to match the correct route
-  const isCategoryActive = (slug) => {
-    return location.pathname === `/products/category/${slug}`;
-  };
+  const isCategoryActive = (slug) =>
+    location.pathname === `/products/category/${slug}`;
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-black text-white shadow-md z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-
         {/* Logo */}
         <NavLink to="/">
           <div className="flex items-center text-yellow-500 cursor-pointer">
@@ -48,7 +45,7 @@ const Navbar = () => {
           </div>
         </NavLink>
 
-        {/* Desktop Nav Links */}
+        {/* Desktop Nav */}
         <div className="hidden md:flex space-x-6 items-center">
           <NavLink
             to="/"
@@ -61,7 +58,7 @@ const Navbar = () => {
             Home
           </NavLink>
 
-          {/* Desktop Dropdown */}
+          {/* Products Dropdown */}
           <div
             className="relative inline-block"
             onMouseEnter={handleMouseEnter}
@@ -75,11 +72,11 @@ const Navbar = () => {
             </NavLink>
 
             {dropdownOpen && (
-              <div className="absolute left-0 mt-2 w-48 bg-black rounded-2xl text-yellow-500 z-20 shadow-lg">
+              <div className="absolute left-0 mt-2 w-48 bg-black rounded-2xl text-yellow-500 z-20 shadow-lg transition-all duration-300">
                 {categories.map((cat) => (
                   <NavLink
                     key={cat.slug}
-                    to={`/products/category/${cat.slug}`}   // FIXED
+                    to={`/products/category/${cat.slug}`}
                     className={({ isActive }) =>
                       `block px-4 py-2 rounded hover:bg-white hover:text-black ${
                         isCategoryActive(cat.slug) ? "bg-yellow-500 text-black" : ""
@@ -106,17 +103,6 @@ const Navbar = () => {
             About Us
           </NavLink>
 
-          {/* <NavLink
-            to="/inquiry"
-            className={({ isActive }) =>
-              isActive
-                ? "text-yellow-500 font-semibold"
-                : "text-white hover:text-yellow-500"
-            }
-          >
-            Inquiry
-          </NavLink> */}
-
           <NavLink
             to="/contact"
             className={({ isActive }) =>
@@ -129,18 +115,36 @@ const Navbar = () => {
           </NavLink>
         </div>
 
-        {/* Hamburger for mobile */}
+        {/* Hamburger */}
         <button
           onClick={toggleMenu}
-          className="md:hidden text-yellow-500 focus:outline-none"
+          className="md:hidden relative w-8 h-8 flex items-center justify-center focus:outline-none"
         >
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
+          <span
+            className={`absolute w-6 h-[2px] bg-yellow-500 transition-transform duration-300 ${
+              isOpen ? "rotate-45" : "-translate-y-2"
+            }`}
+          />
+          <span
+            className={`absolute w-6 h-[2px] bg-yellow-500 transition-opacity duration-300 ${
+              isOpen ? "opacity-0" : "opacity-100"
+            }`}
+          />
+          <span
+            className={`absolute w-6 h-[2px] bg-yellow-500 transition-transform duration-300 ${
+              isOpen ? "-rotate-45" : "translate-y-2"
+            }`}
+          />
         </button>
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-black border-t border-gray-800 text-center space-y-4 py-4">
+      <div
+        className={`md:hidden bg-black border-t border-gray-800 overflow-hidden transition-all duration-300 ${
+          isOpen ? "max-h-[500px] py-4" : "max-h-0 py-0"
+        }`}
+      >
+        <div className="flex flex-col items-center space-y-4">
           <NavLink
             to="/"
             onClick={toggleMenu}
@@ -148,8 +152,6 @@ const Navbar = () => {
           >
             Home
           </NavLink>
-
-          {/* All products link */}
           <NavLink
             to="/products"
             onClick={toggleMenu}
@@ -157,12 +159,10 @@ const Navbar = () => {
           >
             All Products
           </NavLink>
-
-          {/* Mobile categories */}
           {categories.map((cat) => (
             <NavLink
               key={cat.slug}
-              to={`/products/category/${cat.slug}`}   // FIXED
+              to={`/products/category/${cat.slug}`}
               onClick={toggleMenu}
               className={`block text-white hover:text-yellow-500 ${
                 isCategoryActive(cat.slug) ? "bg-yellow-500 text-black rounded" : ""
@@ -172,7 +172,6 @@ const Navbar = () => {
               {cat.name}
             </NavLink>
           ))}
-
           <NavLink
             to="/about"
             onClick={toggleMenu}
@@ -180,15 +179,6 @@ const Navbar = () => {
           >
             About Us
           </NavLink>
-
-          {/* <NavLink
-            to="/inquiry"
-            onClick={toggleMenu}
-            className="block text-white hover:text-yellow-500"
-          >
-            Inquiry
-          </NavLink> */}
-
           <NavLink
             to="/contact"
             onClick={toggleMenu}
@@ -197,7 +187,7 @@ const Navbar = () => {
             Contact Us
           </NavLink>
         </div>
-      )}
+      </div>
     </nav>
   );
 };

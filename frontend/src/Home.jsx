@@ -79,7 +79,7 @@ useEffect(() => {
       </div>
 
       {/* INTRO SECTION */}
-      <div className="text-center px-4 sm:px-6 md:px-8 lg:px-12 py-8 space-y-4">
+      <div className="text-center px-4 sm:px-6 mt-8 md:px-8 lg:px-12 space-y-4">
         <h3 className="text-base sm:text-lg md:text-xl">
           Since 1987 — The Beauty of Trust and Innovation
         </h3>
