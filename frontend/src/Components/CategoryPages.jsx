@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ProductContext } from "../context/ProductContext";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 const CategoryPages = () => {
   const { slug } = useParams();
@@ -38,7 +38,7 @@ const CategoryPages = () => {
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredProducts.map((product) => (
-          <motion.div
+          <Motion.div
             key={product.slug}
             whileHover={{ scale: 1.03, y: -2 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
@@ -67,7 +67,7 @@ const CategoryPages = () => {
                 </p>
               </div>
             </Link>
-          </motion.div>
+          </Motion.div>
         ))}
       </div>
     </div>
