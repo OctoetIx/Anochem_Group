@@ -6,7 +6,7 @@ import Footer from "./Components/Footer";
 import Home from "./Home";
 import About from "./Components/About";
 import LoginPage from "./auth/Login";
-import InquiryForm from "./Components/InquiryForm";
+// import InquiryForm from "./Components/InquiryForm";
 import ContactPage from "./Components/ContactPage";
 import ProductPage from "./Components/ProductPage";
 import ProductDetails from "./Components/ProductDetails";
@@ -36,7 +36,7 @@ const App = () => {
           <Route path="/products/:slug" element={<ProductDetails />} />
 
           <Route path="/about" element={<About />} />
-          <Route path="/inquiry" element={<InquiryForm />} />
+          {/* <Route path="/inquiry" element={<InquiryForm />} /> */}
           <Route path="/contact" element={<ContactPage />} />
 
           <Route
