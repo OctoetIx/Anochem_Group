@@ -74,12 +74,12 @@ useEffect(() => {
   return (
     <>
       {/* HERO CAROUSEL */}
-      <div className="pt-[85px]">
+      <div className="mt-20 relative w-full h-[80vh] md:h-[90vh] lg:h-[95vh] overflow-hidden">
         <Carousel />
       </div>
 
       {/* INTRO SECTION */}
-      <div className="text-center px-4 sm:px-6 md:px-8 lg:px-12 py-8 space-y-4">
+      <div className="text-center px-4 sm:px-6 mt-8 md:px-8 lg:px-12 space-y-4">
         <h3 className="text-base sm:text-lg md:text-xl">
           Since 1987 — The Beauty of Trust and Innovation
         </h3>
@@ -102,43 +102,65 @@ useEffect(() => {
       </div>
 
       {/* ABOUT / FADE-IN SECTION */}
-      <section ref={ref} className="bg-white py-10 sm:py-14 md:py-16">
-        <motion.div
-          className="flex flex-col md:flex-row my-6 justify-center md:justify-around items-center px-4 sm:px-6 md:px-8 gap-8 md:gap-12"
-          variants={containerVariants}
-          initial="hidden"
-          animate={controls}
-        >
-          {/* Text Section */}
-          <motion.div
-            variants={itemVariants}
-            className="text-center md:text-left md:w-1/2 px-2 sm:px-4 text-base sm:text-lg md:text-xl"
-          >
-            <h3 className="text-gray-700 text-base sm:text-lg md:text-xl">
-              Since 1987
-            </h3>
-            <h1 className="my-4 font-bold text-2xl sm:text-3xl md:text-4xl text-black">
-              #1 COSMETICS COMPANY IN NIGERIA
-            </h1>
-            <p className="text-gray-700 text-sm sm:text-base md:text-lg leading-relaxed">
-              Anochemical Cosmetics provides advanced quality control in an
-              industry where excellence is expected. Measures are applied
-              throughout the manufacturing process — from the chemist in our
-              labs to the production line — assuring you the finest products and
-              packaging.
-            </p>
-          </motion.div>
+     <section
+  ref={ref}
+  className="relative bg-gradient-to-b from-white to-gray-50 py-16 sm:py-20 md:py-24 overflow-hidden"
+>
+  {/* Decorative blur */}
+  <div className="absolute -top-24 -right-24 w-72 h-72 bg-yellow-400/20 rounded-full blur-3xl" />
 
-          {/* Image Section */}
-          <motion.div variants={itemVariants} className="w-full md:w-[45%]">
-            <img
-              src={img4}
-              alt="About Anochemical"
-              className="w-full sm:w-[350px] md:w-[450px] rounded-lg shadow-lg mx-auto"
-            />
-          </motion.div>
-        </motion.div>
-      </section>
+  <motion.div
+    className="relative max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-12 px-4 sm:px-6 lg:px-8"
+    variants={containerVariants}
+    initial="hidden"
+    animate={controls}
+  >
+    {/* TEXT SECTION */}
+    <motion.div
+      variants={itemVariants}
+      className="md:w-1/2 text-center md:text-left"
+    >
+      <span className="inline-block mb-3 text-sm sm:text-base tracking-widest uppercase text-yellow-600 font-semibold">
+        Since 1987
+      </span>
+
+      <h1 className="font-extrabold text-3xl sm:text-4xl md:text-5xl leading-tight text-gray-900">
+        #1 Cosmetics Company <br className="hidden sm:block" />
+        in Nigeria
+      </h1>
+
+      <p className="mt-6 text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-xl mx-auto md:mx-0">
+        Anochemical Cosmetics delivers advanced quality control where excellence
+        is expected. From laboratory formulation to large-scale production,
+        every step is designed to guarantee premium products and packaging you
+        can trust.
+      </p>
+
+      <button
+        onClick={() => navigate("/products")}
+        className="mt-8 cursor-pointer inline-flex items-center gap-2 bg-black text-yellow-500 px-6 py-3 rounded-full font-medium text-sm sm:text-base hover:bg-yellow-500 hover:text-black transition-all duration-300 shadow-md"
+      >
+        Explore Our Products
+      </button>
+    </motion.div>
+
+    {/* IMAGE SECTION */}
+    <motion.div
+      variants={itemVariants}
+      className="md:w-1/2 flex justify-center"
+    >
+      <div className="relative">
+        <div className="absolute inset-0 bg-yellow-500/20 rounded-2xl blur-xl scale-105" />
+        <img
+          src={img4}
+          alt="About Anochemical"
+          className="relative w-[280px] sm:w-[360px] md:w-[440px] rounded-2xl shadow-2xl object-cover"
+        />
+      </div>
+    </motion.div>
+  </motion.div>
+</section>
+
 
 {/* AUTO-SLIDING PRODUCT CAROUSEL */}
 <section className="relative bg-gray-900 py-6 sm:py-8 overflow-hidden">
