@@ -53,7 +53,7 @@ const ViewProducts = ({ products, onDelete, onEdit }) => {
               {/* IMAGE — show first image only */}
           {product.images?.length > 0 ? (
   <img
-    src={
+    src={ 
       product.images[
         Math.min(product.coverImageIndex ?? 0, product.images.length - 1)
       ]?.url

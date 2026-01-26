@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.get("/verify", verifyAdmin, (_req, res) =>
-  res.json({ message: "Admin verified" })
+  res.json({ message: "Admin verified" }) 
 );
 
 // POST create

@@ -4,6 +4,7 @@ dotenv.config();
 import authRoutes from './routes/authRoutes';  
 import productRoutes from './routes/productRoutes';
 import adminProductRoutes from './routes/adminProductRoutes';
+import contactRoutes from './routes/contactRoutes';
 import helmet from 'helmet';    
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
@@ -46,6 +47,7 @@ app.use(rateLimit({
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/admin', adminProductRoutes);
+app.use('/api/contact', contactRoutes)
 
 // Root route
 app.get('/', (req, res) => {
