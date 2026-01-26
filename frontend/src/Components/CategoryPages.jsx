@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ProductContext } from "../context/ProductContext";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 const CategoryPages = () => {
   const { slug } = useParams();
@@ -29,7 +29,7 @@ const CategoryPages = () => {
     );
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-20">
+    <div className="max-w-7xl mx-auto px-6 py-30">
       {/* Category Title */}
       <h1 className="text-3xl sm:text-4xl font-extrabold text-yellow-500 mb-10 text-center tracking-wide">
         {categoryTitle}
@@ -38,7 +38,7 @@ const CategoryPages = () => {
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredProducts.map((product) => (
-          <motion.div
+          <Motion.div
             key={product.slug}
             whileHover={{ scale: 1.03, y: -2 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
@@ -46,7 +46,7 @@ const CategoryPages = () => {
           >
             <Link to={`/products/${product.slug}`} className="block">
               {/* Image */}
-              <div className="overflow-hidden rounded-t-2xl h-36 sm:h-40">
+              <div className="overflow-hidden rounded-t-2xl h-40 sm:h-44">
                 <img
                   src={
                     product.images?.[product.coverImageIndex ?? 0]?.url ||
@@ -67,7 +67,7 @@ const CategoryPages = () => {
                 </p>
               </div>
             </Link>
-          </motion.div>
+          </Motion.div>
         ))}
       </div>
     </div>
