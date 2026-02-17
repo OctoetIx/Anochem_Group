@@ -1,4 +1,4 @@
-// adminRoutes.ts
+// adminRoutes.ts  
 import express from "express";
 import multer from "multer";
 import path from "path";
@@ -11,6 +11,9 @@ import {
 import { verifyAdmin } from "../middleware/verifyAuth";
 
 const router = express.Router();
+
+router.use(verifyAdmin); // Apply admin verification to all routes in this router
+
 const UPLOAD_DIR = path.join(__dirname, "../../uploads");
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 

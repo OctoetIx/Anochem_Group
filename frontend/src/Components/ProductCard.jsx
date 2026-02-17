@@ -24,10 +24,10 @@ const ProductCard = ({ product }) => {
 
         {/* Content */}
         <div className="p-3 flex flex-col gap-1">
-          <h3 className="text-md font-semibold text-gray-900 truncate">
+          <h3 className="text-md font-semibold text-gray-900 truncate line-clamp-1">
             {product.productName}
           </h3>
-          <p className="text-sm text-gray-500 line-clamp-3">{product.description}</p>
+          <p className="text-sm text-gray-500 line-clamp-1">{product.description}</p>
         </div>
       </MotionDiv>
     </Link>
