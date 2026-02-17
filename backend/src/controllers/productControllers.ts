@@ -252,6 +252,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     await product.save();
 
     await clearProductCaches(product.categorySlug);
+    await clearProductCaches(product.slug);
 
     return res.json({ product });
   } catch (err) {

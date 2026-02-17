@@ -15,7 +15,7 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import RegisterPage from "./auth/Register";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify"; //
-import { ProductProvider } from "./context/ProductContext";
+import  {ProductProvider}  from "./context/ProductProvider";
 import CategoryPages from "./Components/CategoryPages";
 
 const App = () => {
