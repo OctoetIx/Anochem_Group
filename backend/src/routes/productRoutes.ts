@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import {
   getAllProducts,
   getProductsByCategory,
@@ -10,7 +10,9 @@ import { cache, CACHE_TTL } from "../middleware/cache";
 
 const router = express.Router();
 
+// ==============================
 // Cache key prefixes
+// ==============================
 const CACHE_KEYS = {
   ALL: "products",
   CATEGORY: (slug: string) => `category:${slug}`,
@@ -19,37 +21,58 @@ const CACHE_KEYS = {
   RELATED: (slug: string) => `related:${slug}`,
 };
 
-// Wraps cache() so routes can dynamically generate keys
-const cacheKey = (
-  keyFn: (req: express.Request) => string,
-  ttl?: number
-) => (req: express.Request, res: express.Response, next: express.NextFunction) =>
-  cache(keyFn(req), ttl)(req, res, next);
+// ==============================
+// Typed cache wrapper (generic)
+// ==============================
+const cacheKey =
+  <P extends Record<string, string>>(
+    keyFn: (req: Request<P>) => string,
+    ttl?: number
+  ) =>
+  (req: Request<P>, res: Response, next: NextFunction) =>
+    cache(keyFn(req), ttl)(req, res, next);
 
+// ==============================
 // Routes
+// ==============================
+
+// Get all products
 router.get("/", cache(CACHE_KEYS.ALL), getAllProducts);
 
+// Search products
 router.get(
   "/search/:term",
-  cacheKey((req) => CACHE_KEYS.SEARCH(req.params.term)),
+  cacheKey<{ term: string }>((req) =>
+    CACHE_KEYS.SEARCH(req.params.term)
+  ),
   searchProducts
 );
 
+// Get products by category
 router.get(
   "/category/:slug",
-  cacheKey((req) => CACHE_KEYS.CATEGORY(req.params.slug)),
+  cacheKey<{ slug: string }>((req) =>
+    CACHE_KEYS.CATEGORY(req.params.slug)
+  ),
   getProductsByCategory
 );
 
+// Get related products
 router.get(
   "/:slug/related",
-  cacheKey((req) => CACHE_KEYS.RELATED(req.params.slug), CACHE_TTL.SHORT),
+  cacheKey<{ slug: string }>(
+    (req) => CACHE_KEYS.RELATED(req.params.slug),
+    CACHE_TTL.SHORT
+  ),
   getRelatedProducts
 );
 
+// Get single product
 router.get(
   "/:slug",
-  cacheKey((req) => CACHE_KEYS.PRODUCT(req.params.slug)),
+  cacheKey<{ slug: string }>((req) =>
+    CACHE_KEYS.PRODUCT(req.params.slug)
+  ),
   getProductBySlug
 );
 
