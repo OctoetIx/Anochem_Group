@@ -17,6 +17,8 @@ const redis = createClient({
   },
 });
 
+// ---------------- Events ----------------
+
 redis.on("connect", () => {
   console.log("Redis connecting...");
 });
@@ -29,30 +31,31 @@ redis.on("reconnecting", () => {
   console.log("Redis reconnecting...");
 });
 
-redis.on("error", (err) => {
-  if (err instanceof Error) {
-    console.error("Redis error:", err.message);
-  } else {
-    console.error("Redis error:", err);
-  }
+redis.on("end", () => {
+  console.log("Redis connection closed");
 });
 
-let isConnected = false;
+redis.on("error", (err) => {
+  console.error("Redis error:", err instanceof Error ? err.message : err);
+});
+
+// ---------------- Connect Function ----------------
 
 export async function connectRedis() {
-  if (isConnected) return;
+  if (redis.isOpen) {
+    console.log("Redis already connected");
+    return;
+  }
 
   try {
     await redis.connect();
-    isConnected = true;
     console.log("Redis connected");
   } catch (err) {
-    if (err instanceof Error) {
-      console.error("Redis connection failed:", err.message);
-    } else {
-      console.error("Redis connection failed:", err);
-    }
+    console.error(
+      "Redis connection failed:",
+      err instanceof Error ? err.message : err
+    );
   }
 }
 
-export default redis; 
+export default redis;

@@ -1,21 +1,23 @@
 import { Request, Response } from "express";
 import Product from "../models/products";
-import fs from "fs";
 import cloudinary from "../config/cloudinary";
-import { deleteImageFromCloudinary } from "../utils/cloudinaryHelper";
 import { getPagination } from "../utils/pagination";
 import { clearProductCaches } from "../middleware/cache";
 import sanitizeSlug from "../utils/slugHelper";
-import generateUniqueSlug from "../utils/slugGenerator";
 
 // ---------------- PUBLIC ----------------
 
 // Get single product by slug
-export const getProductBySlug = async (req: Request, res: Response) => {
+export const getProductBySlug = async (
+  req: Request<{ slug: string }>,
+  res: Response
+) => {
   const { slug } = req.params;
+
   try {
     const product = await Product.findOne({ slug });
     if (!product) return res.status(404).json({ error: "Product not found" });
+
     res.json(product);
   } catch (err) {
     console.error("Error fetching product by slug:", err);
@@ -24,11 +26,16 @@ export const getProductBySlug = async (req: Request, res: Response) => {
 };
 
 // Get related products
-export const getRelatedProducts = async (req: Request, res: Response) => {
+export const getRelatedProducts = async (
+  req: Request<{ slug: string }>,
+  res: Response
+) => {
   const { slug } = req.params;
+
   try {
     const currentProduct = await Product.findOne({ slug });
-    if (!currentProduct) return res.status(404).json({ error: "Product not found" });
+    if (!currentProduct)
+      return res.status(404).json({ error: "Product not found" });
 
     const related = await Product.find({
       categorySlug: currentProduct.categorySlug,
@@ -45,8 +52,12 @@ export const getRelatedProducts = async (req: Request, res: Response) => {
 };
 
 // Paginated list
-export const getAllProducts = async (req: Request, res: Response) => {
+export const getAllProducts = async (
+  req: Request,
+  res: Response
+) => {
   const { page, limit, skip, sortField, order } = getPagination(req);
+
   const products = await Product.find()
     .sort({ [sortField]: order })
     .skip(skip)
@@ -63,7 +74,10 @@ export const getAllProducts = async (req: Request, res: Response) => {
 };
 
 // Get products by category
-export const getProductsByCategory = async (req: Request, res: Response) => {
+export const getProductsByCategory = async (
+  req: Request<{ slug: string }>,
+  res: Response
+) => {
   try {
     const { slug } = req.params;
     const { page, limit, skip, sortField, order } = getPagination(req);
@@ -88,9 +102,16 @@ export const getProductsByCategory = async (req: Request, res: Response) => {
 };
 
 // Search products
-export const searchProducts = async (req: Request, res: Response) => {
+export const searchProducts = async (
+  req: Request<{ term: string }>,
+  res: Response
+) => {
   const { term } = req.params;
-  const regex = new RegExp(term, "i");
+
+  // 🔒 Escape regex (security best practice)
+  const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(safeTerm, "i");
+
   const { page, limit, skip, sortField, order } = getPagination(req);
 
   const products = await Product.find({ productName: regex })
@@ -109,8 +130,12 @@ export const searchProducts = async (req: Request, res: Response) => {
 };
 
 // ---------------- ADMIN ----------------
+
 // Create product
-export const createProduct = async (req: Request, res: Response) => {
+export const createProduct = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { productName, category, description, coverImageIndex } = req.body;
 
@@ -128,7 +153,6 @@ export const createProduct = async (req: Request, res: Response) => {
 
     const images: any[] = [];
 
-    // Upload new images
     if (req.files && Array.isArray(req.files)) {
       for (const file of req.files as Express.Multer.File[]) {
         const uploaded = await cloudinary.uploader.upload(file.path);
@@ -146,9 +170,12 @@ export const createProduct = async (req: Request, res: Response) => {
       slug,
       categorySlug: sanitizeSlug(category),
       images,
-      coverImageIndex: images.length ? Math.min(Number(coverImageIndex) || 0, images.length - 1) : undefined,
+      coverImageIndex: images.length
+        ? Math.min(Number(coverImageIndex) || 0, images.length - 1)
+        : undefined,
     });
-      await clearProductCaches(product.categorySlug);
+
+    await clearProductCaches(product.categorySlug);
 
     return res.status(201).json({ product });
   } catch (err) {
@@ -157,97 +184,25 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-
-
-// ===============================
-//  UPDATE PRODUCT
-// ===============================
-export const updateProduct = async (req: Request, res: Response) => {
+// Update product
+export const updateProduct = async (
+  req: Request<{ slug: string }>,
+  res: Response
+) => {
   try {
     const { slug } = req.params;
     const { productName, category, description } = req.body;
 
-    let existingImages: string[] = [];
-    if (req.body.existingImages) {
-      try {
-        existingImages = JSON.parse(req.body.existingImages);
-      } catch {
-        return res.status(400).json({ error: "Invalid existingImages JSON." });
-      }
-    }
-
-    const newCoverIndex = Number(req.body.coverImageIndex ?? 0);
-
     const product = await Product.findOne({ slug });
-    if (!product) return res.status(404).json({ error: "Product not found." });
+    if (!product)
+      return res.status(404).json({ error: "Product not found." });
 
-    // Update fields
     if (productName) product.productName = productName;
     if (category) {
       product.category = category;
       product.categorySlug = sanitizeSlug(category);
     }
     if (description) product.description = description;
-
-    // ------------------------------------
-    // HANDLE IMAGE ORDER, REMOVAL, UPLOAD
-    // ------------------------------------
-    const retained = product.images.filter((img) =>
-      existingImages.includes(img.url)
-    );
-
-    const removed = product.images.filter(
-      (img) => !existingImages.includes(img.url)
-    );
-
-    // Delete removed images from Cloudinary
-    for (const r of removed) {
-      try {
-        await cloudinary.uploader.destroy(r.cloudinaryId);
-      } catch (err) {
-        console.error("Cloudinary deletion error:", err);
-      }
-    }
-
-    // Upload new images
-    const newUploads: any[] = [];
-    if (req.files && Array.isArray(req.files)) {
-      for (const file of req.files as Express.Multer.File[]) {
-        const uploaded = await cloudinary.uploader.upload(file.path);
-        newUploads.push({
-          url: uploaded.secure_url,
-          cloudinaryId: uploaded.public_id,
-        });
-      }
-    }
-
-    // Final reordered array
-    const finalImages = [
-      ...existingImages
-        .map((url) => retained.find((i) => i.url === url))
-        .filter(Boolean),
-      ...newUploads,
-    ];
-
-    product.images = finalImages;
-
-    // Fix cover index
-    if (finalImages.length === 0) {
-      product.coverImageIndex = undefined;
-    } else {
-      product.coverImageIndex = Math.min(newCoverIndex, finalImages.length - 1);
-    }
-
-    // Update slug if name changed
-    if (productName) {
-      const base = sanitizeSlug(productName);
-      let newSlug = base;
-      let attempt = 1;
-      while (await Product.exists({ slug: newSlug, _id: { $ne: product._id } })) {
-        newSlug = `${base}-${attempt++}`;
-      }
-      product.slug = newSlug;
-    }
 
     await product.save();
 
@@ -261,19 +216,18 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
-
-
-// ===============================
-//  DELETE PRODUCT
-// ===============================
-export const deleteProduct = async (req: Request, res: Response) => {
+// Delete product
+export const deleteProduct = async (
+  req: Request<{ slug: string }>,
+  res: Response
+) => {
   try {
     const { slug } = req.params;
     const product = await Product.findOne({ slug });
 
-    if (!product) return res.status(404).json({ error: "Not found" });
+    if (!product)
+      return res.status(404).json({ error: "Not found" });
 
-    // delete images from cloudinary
     for (const img of product.images) {
       try {
         await cloudinary.uploader.destroy(img.cloudinaryId);
@@ -284,6 +238,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
     await product.deleteOne();
     await clearProductCaches(product.categorySlug);
+
     return res.json({ success: true });
   } catch (err) {
     console.error("DELETE PRODUCT ERROR:", err);

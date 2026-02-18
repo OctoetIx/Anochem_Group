@@ -93,10 +93,24 @@ const PORT = process.env.PORT || 2000;
   }
 })();
 
-process.on("SIGINT", async () => {
-  console.log("Shutting down gracefully...");
-  await redis.quit();
+const gracefulShutdown = async (signal: string) => {
+  console.log(`Received ${signal}. Shutting down gracefully...`);
+
+  try {
+    if (redis?.isOpen) {
+      await redis.quit();
+      console.log("Redis closed cleanly.");
+    }
+  } catch (err) {
+    console.error("Error during Redis shutdown:", err);
+  }
+
   process.exit(0);
+};
+
+// Handle all shutdown signals
+["SIGINT", "SIGTERM", "SIGUSR2"].forEach((signal) => {
+  process.on(signal, () => gracefulShutdown(signal));
 });
 
 export default app;
