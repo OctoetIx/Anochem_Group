@@ -10,7 +10,7 @@ import sanitizeSlug from "../utils/slugHelper";
 // Get single product by slug
 export const getProductBySlug = async (
   req: Request<{ slug: string }>,
-  res: Response
+  res: Response,
 ) => {
   const { slug } = req.params;
 
@@ -28,7 +28,7 @@ export const getProductBySlug = async (
 // Get related products
 export const getRelatedProducts = async (
   req: Request<{ slug: string }>,
-  res: Response
+  res: Response,
 ) => {
   const { slug } = req.params;
 
@@ -52,10 +52,7 @@ export const getRelatedProducts = async (
 };
 
 // Paginated list
-export const getAllProducts = async (
-  req: Request,
-  res: Response
-) => {
+export const getAllProducts = async (req: Request, res: Response) => {
   const { page, limit, skip, sortField, order } = getPagination(req);
 
   const products = await Product.find()
@@ -76,7 +73,7 @@ export const getAllProducts = async (
 // Get products by category
 export const getProductsByCategory = async (
   req: Request<{ slug: string }>,
-  res: Response
+  res: Response,
 ) => {
   try {
     const { slug } = req.params;
@@ -106,9 +103,12 @@ export const searchProducts = async (
   req: Request<{ term: string }>,
   res: Response
 ) => {
-  const { term } = req.params;
+  let { term } = req.params;
 
-  // 🔒 Escape regex (security best practice)
+  // Make sure term is a string
+  if (Array.isArray(term)) term = term[0];
+
+  // Escape regex special characters (security best practice)
   const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const regex = new RegExp(safeTerm, "i");
 
@@ -132,10 +132,7 @@ export const searchProducts = async (
 // ---------------- ADMIN ----------------
 
 // Create product
-export const createProduct = async (
-  req: Request,
-  res: Response
-) => {
+export const createProduct = async (req: Request, res: Response) => {
   try {
     const { productName, category, description, coverImageIndex } = req.body;
 
@@ -187,15 +184,14 @@ export const createProduct = async (
 // Update product
 export const updateProduct = async (
   req: Request<{ slug: string }>,
-  res: Response
+  res: Response,
 ) => {
   try {
     const { slug } = req.params;
     const { productName, category, description } = req.body;
 
     const product = await Product.findOne({ slug });
-    if (!product)
-      return res.status(404).json({ error: "Product not found." });
+    if (!product) return res.status(404).json({ error: "Product not found." });
 
     if (productName) product.productName = productName;
     if (category) {
@@ -219,14 +215,13 @@ export const updateProduct = async (
 // Delete product
 export const deleteProduct = async (
   req: Request<{ slug: string }>,
-  res: Response
+  res: Response,
 ) => {
   try {
     const { slug } = req.params;
     const product = await Product.findOne({ slug });
 
-    if (!product)
-      return res.status(404).json({ error: "Not found" });
+    if (!product) return res.status(404).json({ error: "Not found" });
 
     for (const img of product.images) {
       try {

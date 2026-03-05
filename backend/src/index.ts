@@ -103,7 +103,7 @@ const gracefulShutdown = async (signal: string) => {
     }
   } catch (err) {
     console.error("Error during Redis shutdown:", err);
-  }
+  } 
 
   process.exit(0);
 };
@@ -111,6 +111,6 @@ const gracefulShutdown = async (signal: string) => {
 // Handle all shutdown signals
 ["SIGINT", "SIGTERM", "SIGUSR2"].forEach((signal) => {
   process.on(signal, () => gracefulShutdown(signal));
-});
-
+}); 
+ 
 export default app;
